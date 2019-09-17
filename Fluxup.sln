@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29201.188
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fluxup", "Fluxup\Fluxup.csproj", "{84D949C6-E911-41A4-94BE-E94AC1270A6A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fluxup.Updater", "Fluxup\Fluxup.Updater.csproj", "{F6DBE23C-4CB2-4616-8295-3FAAFC92566A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,10 +11,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{84D949C6-E911-41A4-94BE-E94AC1270A6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{84D949C6-E911-41A4-94BE-E94AC1270A6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{84D949C6-E911-41A4-94BE-E94AC1270A6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{84D949C6-E911-41A4-94BE-E94AC1270A6A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F6DBE23C-4CB2-4616-8295-3FAAFC92566A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6DBE23C-4CB2-4616-8295-3FAAFC92566A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6DBE23C-4CB2-4616-8295-3FAAFC92566A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6DBE23C-4CB2-4616-8295-3FAAFC92566A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

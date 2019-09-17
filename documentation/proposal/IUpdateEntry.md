@@ -3,11 +3,11 @@
 ```cs
 public interface IUpdateEntry
 {
-    public string Filename { get; }
-    public long Filesize { get; }
-    public bool IsDelta { get; }
-    public Task<string> FetchReleaseNote();
-    public string SHA1 { get; }
-    public Version Version { get; }
+    string Filename { get; }
+    long Filesize { get; }
+    bool IsDelta { get; }
+    Task<string> FetchReleaseNote();
+    string SHA1 { get; }
+    Version Version { get; }
 }
 ```

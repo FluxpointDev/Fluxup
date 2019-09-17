@@ -3,8 +3,8 @@
 ```cs
 public interface IUpdateInfo
 {
-    public UpdateEntry[] Updates { get; }
-    public Version NewestUpdateVersion { get; }
-    public Task<string[]> FetchReleaseNotes();
+    UpdateEntry[] Updates { get; }
+    Version NewestUpdateVersion { get; }
+    Task<string[]> FetchReleaseNotes();
 }
 ```
