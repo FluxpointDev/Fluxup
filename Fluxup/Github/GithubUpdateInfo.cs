@@ -1,19 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Fluxup.Updater.Github
 {
-    class GithubUpdateInfo : IUpdateInfo
+    public class GithubUpdateInfo : IUpdateInfo<GithubUpdateEntry>
     {
-        public IUpdateEntry[] Updates => throw new NotImplementedException();
-
-        public Version NewestUpdateVersion => throw new NotImplementedException();
-
-        public Task<string[]> FetchReleaseNotes()
+        internal GithubUpdateInfo(IEnumerable<GithubUpdateEntry> updates)
         {
-            throw new NotImplementedException();
+            //Filter out any updates that are null for now...
+            Updates = updates.Where(x => x != null).ToArray();
+            NewestUpdateVersion = Updates?.FirstOrDefault()?.Version;
+            HasUpdate = Updates != null && Updates.LongCount() > 0;
+        }
+
+        public bool HasUpdate { get; }
+
+        public GithubUpdateEntry[] Updates { get; }
+
+        public Version NewestUpdateVersion { get; }
+
+        public async Task<string[]> FetchReleaseNotes()
+        {
+            var count = Updates.LongCount();
+            var releaseNotes = new string[count];
+            for (int i = 0; i < count; i++)
+            {
+                releaseNotes[i] = await Updates[i].FetchReleaseNote() ?? $"No release note for update {Updates[i].Version}.";
+            }
+
+            return releaseNotes;
         }
     }
 }

@@ -4,16 +4,16 @@ using System.Text;
 
 namespace Fluxup.Updater
 {
-    public class TaskbarManager
+    public static class TaskbarManager
     {
-        public bool IsPinnedToTaskbar { get; }
+        public static  bool IsPinnedToTaskbar { get; }
 
-        public void PinToTaskbar()
+        public static  void PinToTaskbar()
         {
             throw new NotImplementedException();
         }
 
-        public void UnpinToTaskbar()
+        public static  void UnpinToTaskbar()
         {
             throw new NotImplementedException();
         }

@@ -3,10 +3,13 @@ using System.Threading.Tasks;
 
 namespace Fluxup.Updater
 {
-    public interface IUpdateInfo
+    public interface IUpdateInfo<TUpdateEntry>
+    where TUpdateEntry : IUpdateEntry
     {
-        IUpdateEntry[] Updates { get; }
+        bool HasUpdate { get; }
+        TUpdateEntry[] Updates { get; }
         Version NewestUpdateVersion { get; }
+        
         Task<string[]> FetchReleaseNotes();
     }
 }

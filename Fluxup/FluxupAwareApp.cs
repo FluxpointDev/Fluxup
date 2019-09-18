@@ -2,9 +2,18 @@
 
 namespace Fluxup.Updater
 {
-    public class FluxupAwareApp
+    public static class FluxupAwareApp
     {
-        public static event EventHandler OnFirstRun;
-        public static event EventHandler<Version> OnUpdate;
+        public static event EventHandler OnFirstRun
+        {
+            add => throw new NotImplementedException();
+            remove => throw new NotImplementedException();
+        }
+
+        public static event EventHandler<Version> OnUpdate
+        {
+            add => throw new NotImplementedException();
+            remove => throw new NotImplementedException();
+        }
     }
 }

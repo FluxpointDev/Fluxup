@@ -5,28 +5,47 @@ using System.Threading.Tasks;
 
 namespace Fluxup.Updater.Github
 {
-    class GithubUpdateFetcher : IUpdateFetcher
+    public class GithubUpdateFetcher : IUpdateFetcher<GithubUpdateInfo, GithubUpdateEntry>
     {
-        public string ApplicationName => throw new NotImplementedException();
+        public GithubUpdateFetcher(string applicationName, string ownerUsername, string repoName, string updateChannel = default)
+        {
+            ApplicationName = applicationName;
+            OwnerUsername = ownerUsername;
+            RepoName = repoName;
+            UpdateChannel = updateChannel;
+        }
+
+        public string ApplicationName { get; }
 
         public string IsInstalledApp => throw new NotImplementedException();
+        public bool IsCheckingForUpdate { get; }
+        public bool IsDownloadingUpdates { get; }    
+        public bool IsInstallingUpdates { get; }
+        public string OwnerUsername { get; }
+        public string RepoName { get; }
+        public string UpdateChannel { get; }
 
-        public Task<IUpdateInfo> CheckForUpdate(bool useDeltaPatching = true)
+        public Task<GithubUpdateInfo> CheckForUpdate(bool useDeltaPatching = true)
         {
             throw new NotImplementedException();
         }
 
-        public Task DownloadUpdates(IUpdateEntry[] updateEntry, Action<double> progress)
+        public Task DownloadUpdates(GithubUpdateEntry[] updateEntry, Action<double> progress = default, Action<Exception> downloadFailed = default)
         {
             throw new NotImplementedException();
         }
 
-        public Task DownloadUpdates(IUpdateInfo updateinfo, Action<double> progress)
+        public Task DownloadUpdates(Action<double> progress = default, Action<Exception> downloadFailed = default)
         {
             throw new NotImplementedException();
         }
 
-        public Task InstallUpdates(IUpdateInfo updateinfo, Action<double> progress)
+        public Task InstallUpdates(GithubUpdateEntry[] updateEntry, Action<double> progress = default, Action<Exception> installFailed = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task InstallUpdates(Action<double> progress = default, Action<Exception> installFailed = default)
         {
             throw new NotImplementedException();
         }

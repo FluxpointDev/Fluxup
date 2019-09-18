@@ -3,14 +3,20 @@ using System.Threading.Tasks;
 
 namespace Fluxup.Updater
 {
-    public interface IUpdateFetcher
+    public interface IUpdateFetcher<TUpdateInfo, TUpdateEntry>
+    where TUpdateInfo : IUpdateInfo<TUpdateEntry>
+    where TUpdateEntry : IUpdateEntry
     {
         string ApplicationName { get; }
         string IsInstalledApp { get; }
+        bool IsCheckingForUpdate { get; }
+        bool IsDownloadingUpdates { get; }
+        bool IsInstallingUpdates { get; }
 
-        Task<IUpdateInfo> CheckForUpdate(bool useDeltaPatching = true);
-        Task DownloadUpdates(IUpdateEntry[] updateEntry, Action<double> progress);
-        Task DownloadUpdates(IUpdateInfo updateinfo, Action<double> progress);
-        Task InstallUpdates(IUpdateInfo updateinfo, Action<double> progress);
+        Task<TUpdateInfo> CheckForUpdate(bool useDeltaPatching = true);
+        Task DownloadUpdates(TUpdateEntry[] updateEntry, Action<double> progress = default, Action<Exception> downloadFailed = default);
+        Task DownloadUpdates(Action<double> progress = default, Action<Exception> downloadFailed = default);
+        Task InstallUpdates(TUpdateEntry[] updateEntry, Action<double> progress = default, Action<Exception> installFailed = default);
+        Task InstallUpdates(Action<double> progress = default, Action<Exception> installFailed = default);
     }
 }
