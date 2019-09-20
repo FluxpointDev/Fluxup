@@ -10,25 +10,25 @@ namespace Fluxup.Updater
     /// </summary>
     public static class ShortcutManager
     {
+        private const string WindowsFileType = ".Ink";
+        private const string LinuxFileType = ".desktop";
+        
         /// <summary>
         /// Makes a shortcut to the application.
         /// </summary>
         /// <param name="shortcutLocation">Where you want the shortcut to go.</param>
-        /// <param name="applicationCategories">Categories that the application fit into</param>
-        /// <param name="folderName">The folder that will contain the shortcut</param>
-        /// <param name="linuxUiLib">The GUI lib that the application using if being made *for* linux</param>
+        /// <param name="iconLocation">Where the icon of the application is.</param>
+        /// <param name="applicationCategories">Categories that the application fit into.</param>
+        /// <param name="folderName">The folder that will contain the shortcut.</param>
+        /// <param name="linuxUiLib">The GUI lib that the application using if being made *for* linux.</param>
         /// <exception cref="NotImplementedException">Windows and macOS is not added (yet)</exception>
-        public static void CreateShortcut(ShortcutLocation shortcutLocation, ApplicationCategory[] applicationCategories, string folderName = default, LinuxUILib linuxUiLib = LinuxUILib.None)
+        public static void CreateShortcut(ShortcutLocation shortcutLocation, string iconLocation = default, string folderName = default, ApplicationCategory[] applicationCategories = default, LinuxUILib linuxUiLib = LinuxUILib.None)
         {
             var shortcutContent = "";
-            var shortcutFileType = "";
-            var shortcutFileLocation = shortcutLocation == ShortcutLocation.StartMenu ? 
-                    Environment.GetFolderPath(Environment.SpecialFolder.StartMenu) :
-                    Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-
             var assembly = Assembly.GetEntryAssembly();
             var assemblyName = assembly.GetName().Name;
-            switch (OperatingSystem.GetOSPlatform())
+
+            switch (OperatingSystem.OSPlatform)
             {
                 case OSPlatform.Windows:
                     throw new NotImplementedException();
@@ -38,7 +38,7 @@ namespace Fluxup.Updater
                     var catCount = applicationCategories.Length;
                     var isTerminalApp = false;
                     var doneAudioVideoCheck = false;
-                    for (int i = 0; i < catCount; i++)
+                    for (var i = 0; i < catCount; i++)
                     {
                         categoryContent += applicationCategories[i] + ";";
                         switch (applicationCategories[i])
@@ -54,7 +54,6 @@ namespace Fluxup.Updater
                                     doneAudioVideoCheck = true;
                                 }
                                 break;
-                            //TODO: Add code for application categories that need another application Categories
                         }
                     }
 
@@ -62,30 +61,23 @@ namespace Fluxup.Updater
                     {
                         categoryContent += linuxUiLib + ";";
                     }
-                    if (!applicationCategories.Contains(ApplicationCategory.AudioVideo) && 
-                        applicationCategories.Contains(ApplicationCategory.Video) && 
-                        applicationCategories.Contains(ApplicationCategory.Audio))
-                    {
-                        categoryContent += "AudioVideo;";
-                    }
-
-                    shortcutFileType = ".desktop";
                     shortcutContent =
                         "[Desktop Entry]\r\n" +
-                        "Encoding=UTF-8\r\n" +
                         $"Name={assemblyName}\r\n" + //name of an app.
-                        $"Exec=./'{assembly.Location.Replace(".dll", "")}'    \r\n" + //command used to launch an app. //TODO: Fix it not load the application
-                        $"Terminal={isTerminalApp}\r\n" + //whether an app requires to be run in a terminal.
-                        $"Icon={assembly.Location}\r\n" + //location of icon file.
+                        $"Exec={assembly.Location.Replace(".dll", "").Replace(" ", @"\ ")}\r\n" + //command used to launch an app.
+                        $"Terminal={isTerminalApp.ToString().ToLower()}\r\n" + //whether an app requires to be run in a terminal.
+                        $"Icon={iconLocation}\r\n" + //location of icon file.
                         "Type=Application\r\n" + //type
                         $"Categories=Application;{categoryContent}\r\n" + //categories in which this app should be listed.
                         $"Comment={assembly.GetCustomAttribute<AssemblyDescriptionAttribute>()}"; //comment which appears as a tooltip.
                 }
                 break;
                 case OSPlatform.MacOS:
-                    throw new NotImplementedException();
+                    Logging.TriggerLog("Can't manage shortcut's for macOS", LogLevel.Error);
+                    return;
             }
 
+            var shortcutFileLocation = GetShortcutFileLocation(shortcutLocation);
             if (!string.IsNullOrWhiteSpace(folderName))
             {
                 shortcutFileLocation = Path.Combine(shortcutFileLocation, folderName);
@@ -94,12 +86,93 @@ namespace Fluxup.Updater
                     Directory.CreateDirectory(shortcutFileLocation);
                 }
             }
-            File.WriteAllText(Path.Combine(shortcutFileLocation, assemblyName + shortcutFileType), shortcutContent);
+            
+            File.WriteAllText(Path.Combine(shortcutFileLocation, assemblyName + GetShortcutFileType()), shortcutContent);
         }
 
+        /// <summary>
+        /// Removes shortcut
+        /// </summary>
+        /// <param name="shortcutLocation">Where you want the shortcut to go.</param>
+        /// <param name="folderName">The folder that will contain the shortcut.</param>
         public static void RemoveShortcut(ShortcutLocation shortcutLocation, string folderName = default)
         {
-            throw new NotImplementedException();
+            if (OperatingSystem.OnMacOS)
+            {
+                return;
+            }
+
+            var shortcutDirectory = GetShortcutFileLocation(shortcutLocation);
+            var shortcutFileLocation = "";
+            
+            if (!string.IsNullOrWhiteSpace(folderName))
+            {
+                shortcutDirectory = Path.Combine(shortcutDirectory, folderName);
+            }
+
+            shortcutFileLocation = Path.Combine(shortcutDirectory, Assembly.GetEntryAssembly().GetName().Name + GetShortcutFileType());
+            if (File.Exists(shortcutFileLocation))
+            {
+                File.Delete(shortcutFileLocation);
+            }
+            if (Directory.Exists(shortcutDirectory) && Directory.GetFiles(shortcutDirectory).Length == 0)
+            {
+                Directory.Delete(shortcutDirectory);
+            }
+        }
+
+        /// <summary>
+        /// Checks to see if the shortcut exists.
+        /// </summary>
+        /// <param name="shortcutLocation">Where you want the shortcut to go.</param>
+        /// <param name="folderName">The folder that will contain the shortcut.</param>
+        /// <returns>if the shortcut exists</returns>
+        public static bool DoesShortcutExist(ShortcutLocation shortcutLocation, string folderName = default)
+        {
+            if (OperatingSystem.OnMacOS)
+            {
+                return false;
+            }
+            
+            var shortcutFileLocation = GetShortcutFileLocation(shortcutLocation);
+            if (!string.IsNullOrWhiteSpace(folderName))
+            {
+                shortcutFileLocation = Path.Combine(shortcutFileLocation, folderName);
+            }
+
+            return File.Exists(Path.Combine(shortcutFileLocation, Assembly.GetEntryAssembly().GetName().Name + GetShortcutFileType()));
+        }
+
+        /// <summary>
+        /// Gets the initial location that the shortcut will be.
+        /// </summary>
+        /// <param name="shortcutLocation">Where you want the shortcut to go.</param>
+        /// <returns></returns>
+        private static string GetShortcutFileLocation(ShortcutLocation shortcutLocation)
+        {
+            return shortcutLocation == ShortcutLocation.StartMenu ? 
+                Environment.GetFolderPath(Environment.SpecialFolder.StartMenu) :
+                Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+        }
+
+        /// <summary>
+        /// Gets the file type the shortcut will be using
+        /// </summary>
+        /// <returns>Shortcut file type</returns>
+        private static string GetShortcutFileType()
+        {
+            switch (OperatingSystem.OSPlatform)
+            {
+                case OSPlatform.Windows:
+                    return WindowsFileType;
+                case OSPlatform.Linux:
+                    return LinuxFileType;
+                case OSPlatform.MacOS:
+                    Logging.TriggerLog("Can't manage shortcut's for macOS", LogLevel.Error);
+                    return "";
+                default:
+                    return "";
+            }
         }
     }
 }

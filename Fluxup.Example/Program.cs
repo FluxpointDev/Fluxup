@@ -10,7 +10,11 @@ namespace Fluxup.Example
     {
         private static async Task Main(string[] args)
         {
-            ShortcutManager.CreateShortcut(ShortcutLocation.Desktop, new []{ ApplicationCategory.Development, ApplicationCategory.ConsoleOnly });
+            Logging.NewLog += (sender, logArgs) => Console.WriteLine($"[{logArgs.LogLevel}] {logArgs.Message}");
+            ShortcutManager.CreateShortcut(ShortcutLocation.Desktop, "", applicationCategories: new []{ ApplicationCategory.Development, ApplicationCategory.ConsoleOnly });
+            var exist = ShortcutManager.DoesShortcutExist(ShortcutLocation.Desktop);
+            ShortcutManager.RemoveShortcut(ShortcutLocation.Desktop);
+            exist = ShortcutManager.DoesShortcutExist(ShortcutLocation.Desktop);
             
             var updateFetcher = new GithubUpdateFetcher("FluxupExample", "FluxpointDev", "FluxupExample");
             var info = await updateFetcher.CheckForUpdate();

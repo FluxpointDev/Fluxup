@@ -7,28 +7,25 @@ namespace Fluxup.Updater
     {
         static OperatingSystem()
         {
-            OnWindows = RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows);
-            OnMacOS = RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.OSX);
-            OnLinux = RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Linux);
-        }
-        
-        public static OSPlatform GetOSPlatform()
-        {
-            if (OnWindows)
+            if (OnWindows = RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows))
             {
-                return OSPlatform.Windows;
+                OSPlatform = OSPlatform.Windows;
             }
-            if (OnMacOS)
+            else if (OnMacOS = RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.OSX))
             {
-                return OSPlatform.MacOS;
+                OSPlatform = OSPlatform.MacOS;
             }
-            if (OnLinux)
+            else if (OnLinux = RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Linux))
             {
-                return OSPlatform.Linux;
+                OSPlatform = OSPlatform.Linux;
             }
-            throw new OSUnknownException();
+            else
+            {
+                throw new OSUnknownException();
+            }
         }
 
+        public static OSPlatform OSPlatform { get; }
         public static bool OnWindows { get; }
         public static bool OnMacOS { get; }
         public static bool OnLinux { get; }
