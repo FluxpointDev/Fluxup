@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29201.188
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fluxup.Updater", "Fluxup\Fluxup.Updater.csproj", "{F6DBE23C-4CB2-4616-8295-3FAAFC92566A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fluxup.Updater", "src\Fluxup.Updater\Fluxup.Updater.csproj", "{F6DBE23C-4CB2-4616-8295-3FAAFC92566A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fluxup.Example", "Fluxup.Example\Fluxup.Example.csproj", "{31A46CD2-591E-4878-A50C-7AFA541DFE0B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fluxup.Example", "src\Fluxup.Example\Fluxup.Example.csproj", "{31A46CD2-591E-4878-A50C-7AFA541DFE0B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -6,7 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Fluxup\Fluxup.Updater.csproj" />
+      <ProjectReference Include="..\Fluxup.Updater\Fluxup.Updater.csproj" />
     </ItemGroup>
 
 </Project>
