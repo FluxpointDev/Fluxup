@@ -1,4 +1,4 @@
-namespace Fluxup.Updater
+namespace Fluxup.Updater.OS
 {
     public enum OSPlatform
     {

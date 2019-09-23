@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Fluxup.Updater
+namespace Fluxup.Updater.Manager
 {
     public static class TaskbarManager
     {

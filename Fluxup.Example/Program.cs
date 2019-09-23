@@ -1,21 +1,30 @@
 ﻿using System;
 using System.Reflection;
 using System.Threading.Tasks;
-using Fluxup.Updater;
+using Fluxup.Updater.Logging;
 using Fluxup.Updater.Github;
+using Fluxup.Updater.Manager;
+using Fluxup.Updater;
 
 namespace Fluxup.Example
 { 
     public static class Program
     {
+        private static Logger Logger = new Logger("Example Application");
+
         private static async Task Main(string[] args)
         {
-            Logging.NewLog += (sender, logArgs) => Console.WriteLine($"[{logArgs.LogLevel}] {logArgs.Message}");
+            Logger.NewLog += (sender, logArgs) => Console.WriteLine($"[{logArgs.LoggerName} - {logArgs.LogLevel}]: {logArgs.Message}");
             ShortcutManager.CreateShortcut(ShortcutLocation.Desktop, "", applicationCategories: new []{ ApplicationCategory.Development, ApplicationCategory.ConsoleOnly });
-            var exist = ShortcutManager.DoesShortcutExist(ShortcutLocation.Desktop);
+            Logger.Debug($"Does shortcut exist?: {ShortcutManager.DoesShortcutExist(ShortcutLocation.Desktop)}");
             ShortcutManager.RemoveShortcut(ShortcutLocation.Desktop);
-            exist = ShortcutManager.DoesShortcutExist(ShortcutLocation.Desktop);
-            
+            Logger.Debug($"Does shortcut exist?: {ShortcutManager.DoesShortcutExist(ShortcutLocation.Desktop)}");
+
+            ShortcutManager.CreateShortcut(ShortcutLocation.StartMenu, "", applicationCategories: new[] { ApplicationCategory.Development, ApplicationCategory.ConsoleOnly });
+            Logger.Debug($"Does shortcut exist?: {ShortcutManager.DoesShortcutExist(ShortcutLocation.StartMenu)}");
+            ShortcutManager.RemoveShortcut(ShortcutLocation.StartMenu);
+            Logger.Debug($"Does shortcut exist?: {ShortcutManager.DoesShortcutExist(ShortcutLocation.StartMenu)}");
+
             var updateFetcher = new GithubUpdateFetcher("FluxupExample", "FluxpointDev", "FluxupExample");
             var info = await updateFetcher.CheckForUpdate();
             if (info.HasUpdate)
