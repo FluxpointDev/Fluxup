@@ -8,18 +8,19 @@ jobs:
     runs-on: windows-latest
     
     steps:
+    - Get Files
     - uses: actions/checkout@v1
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 3.0.100
-    - name: Pack with dotnet
+    - name: Pack Library with .NET Core
       run: dotnet pack --configuration Release
-    - name: Setup Nuget.exe
-      uses: warrenbuckley/Setup-Nuget@v1
-    - name: Add Source to Nuget.exe
-      run: nuget source Add -Name "GitHub" -Source "https://nuget.pkg.github.com/FluxpointDev/index.json" -UserName FluxpointDev -Password ${{ secrets.GITHUBTOKEN }}
-    - name: Nuget Push
-      run: |
-        cd ./src/Fluxup.Updater/bin/Release
-        nuget push *.nupkg -Source "GitHub"
+    # - name: Setup Nuget.exe
+    #  uses: warrenbuckley/Setup-Nuget@v1
+    # - name: Add GitHub Packages Source to Nuget.exe
+    #  run: nuget source Add -Name "GitHub" -Source "https://nuget.pkg.github.com/FluxpointDev/index.json" -UserName FluxpointDev -Password ${{ secrets.GITHUBTOKEN }}
+    # - name: Push Library to Github Packages
+    #  run: |
+    #    cd ./src/Fluxup.Updater/bin/Release
+    #    nuget push *.nupkg -Source "GitHub"
