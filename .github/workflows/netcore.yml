@@ -18,9 +18,7 @@ jobs:
     - name: Setup Nuget.exe
       uses: warrenbuckley/Setup-Nuget@v1
     - name: Add Source to Nuget.exe
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUBTOKEN }}
-      run: nuget source Add -Name "GitHub" -Source "https://nuget.pkg.github.com/FluxpointDev/index.json" -UserName FluxpointDev -Password GITHUB_TOKEN
+      run: nuget source Add -Name "GitHub" -Source "https://nuget.pkg.github.com/FluxpointDev/index.json" -UserName FluxpointDev -Password ${{ secrets.GITHUBTOKEN }}
     - name: Nuget Push
       run: |
         cd ./src/Fluxup.Updater/bin/Release
