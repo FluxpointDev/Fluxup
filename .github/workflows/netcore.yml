@@ -20,7 +20,7 @@ jobs:
     - name: Add Source to Nuget.exe
       run: nuget source Add -Name "GitHub" -Source "https://nuget.pkg.github.com/FluxpointDev/index.json" -UserName FluxpointDev -Password GITHUB_TOKEN
     - name: Nuget Push
-      uses: ./src/Fluxup.Updater/bin/Release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUBTOKEN }}
+      uses: ./src/Fluxup.Updater/bin/Release
       run: nuget push *.nupkg -Source "GitHub"
