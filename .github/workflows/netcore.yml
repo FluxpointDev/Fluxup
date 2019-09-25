@@ -22,5 +22,6 @@ jobs:
     - name: Nuget Push
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUBTOKEN }}
-      uses: ./src/Fluxup.Updater/bin/Release
-      run: nuget push *.nupkg -Source "GitHub"
+      run: |
+        cd ./src/Fluxup.Updater/bin/Release
+        nuget push *.nupkg -Source "GitHub"
