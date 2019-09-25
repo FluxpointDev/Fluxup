@@ -11,6 +11,7 @@ namespace Fluxup.Example
     public static class Program
     {
         private static Logger Logger = new Logger("Example Application");
+        private static GithubUpdateFetcher updateFetcher = new GithubUpdateFetcher("osu", "ppy", "osu");
 
         private static async Task Main(string[] args)
         {
@@ -25,12 +26,11 @@ namespace Fluxup.Example
             ShortcutManager.RemoveShortcut(ShortcutLocation.StartMenu);
             Logger.Debug($"Does shortcut exist?: {ShortcutManager.DoesShortcutExist(ShortcutLocation.StartMenu)}");
 
-            var updateFetcher = new GithubUpdateFetcher("FluxupExample", "FluxpointDev", "FluxupExample");
             var info = await updateFetcher.CheckForUpdate();
             if (info.HasUpdate)
             {
                 Console.WriteLine("They is a update, will do it in the background...");
-                Task.Run(async () =>
+                _ = Task.Run(async () =>
                 {
                     await updateFetcher.DownloadUpdates(info.Updates, 
                         d => Console.WriteLine($"Update download progress is {d}%"),

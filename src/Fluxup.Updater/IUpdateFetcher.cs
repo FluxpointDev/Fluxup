@@ -12,6 +12,7 @@ namespace Fluxup.Updater
         bool IsCheckingForUpdate { get; }
         bool IsDownloadingUpdates { get; }
         bool IsInstallingUpdates { get; }
+        string UpdateChannel { get; }
 
         Task<TUpdateInfo> CheckForUpdate(bool useDeltaPatching = true);
         Task DownloadUpdates(TUpdateEntry[] updateEntry, Action<double> progress = default, Action<Exception> downloadFailed = default);
