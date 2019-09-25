@@ -13,5 +13,13 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 3.0.100
-    - name: Build with dotnet
-      run: dotnet build --configuration Release
+    - name: Pack with dotnet
+      run: dotnet pack --configuration Release
+    - name: Setup Nuget.exe
+      uses: warrenbuckley/Setup-Nuget@v1
+    - name: Add Source to Nuget.exe
+      run: nuget source Add -Name "GitHub" -Source "https://nuget.pkg.github.com/FluxpointDev/index.json" -UserName FluxpointDev -Password GITHUB_TOKEN
+    - name: Nuget Push
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUBTOKEN }}
+      run: nuget push ./src/Fluxup.Updater/bin/Release/*.nupkg -Source "GitHub"
