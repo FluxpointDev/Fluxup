@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageId>Fluxup.Core</PackageId>
+    <PackageReleaseNotes>* First Release, did this so mobile support can be a thing one day :)</PackageReleaseNotes>
+  </PropertyGroup>
+
+  <Import Project="..\Fluxup.NuGet.csproj" />
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.7" />
+  </ItemGroup>
+  
+</Project>

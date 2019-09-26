@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Reflection;
 using System.Threading.Tasks;
-using Fluxup.Updater.Logging;
 using Fluxup.Updater.Github;
 using Fluxup.Updater.Manager;
 using Fluxup.Updater;
+using Fluxup.Core.Logging;
 
 namespace Fluxup.Example
 { 

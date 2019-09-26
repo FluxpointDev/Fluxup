@@ -1,4 +1,4 @@
-namespace Fluxup.Updater.Logging
+namespace Fluxup.Core.Logging
 {
     public enum LogLevel
     {

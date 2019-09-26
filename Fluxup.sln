@@ -5,7 +5,9 @@ VisualStudioVersion = 16.0.29201.188
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fluxup.Updater", "src\Fluxup.Updater\Fluxup.Updater.csproj", "{F6DBE23C-4CB2-4616-8295-3FAAFC92566A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fluxup.Example", "src\Fluxup.Example\Fluxup.Example.csproj", "{31A46CD2-591E-4878-A50C-7AFA541DFE0B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fluxup.Example", "src\Fluxup.Example\Fluxup.Example.csproj", "{31A46CD2-591E-4878-A50C-7AFA541DFE0B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fluxup.Core", "src\Fluxup.Core\Fluxup.Core.csproj", "{575BC2AE-19A0-43D4-91F4-1A428B9B2579}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{31A46CD2-591E-4878-A50C-7AFA541DFE0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{31A46CD2-591E-4878-A50C-7AFA541DFE0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{31A46CD2-591E-4878-A50C-7AFA541DFE0B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{575BC2AE-19A0-43D4-91F4-1A428B9B2579}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{575BC2AE-19A0-43D4-91F4-1A428B9B2579}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{575BC2AE-19A0-43D4-91F4-1A428B9B2579}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{575BC2AE-19A0-43D4-91F4-1A428B9B2579}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

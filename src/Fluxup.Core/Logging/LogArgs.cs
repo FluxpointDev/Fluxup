@@ -1,6 +1,6 @@
 using System;
 
-namespace Fluxup.Updater.Logging
+namespace Fluxup.Core.Logging
 {
     public class LogArgs : EventArgs
     {

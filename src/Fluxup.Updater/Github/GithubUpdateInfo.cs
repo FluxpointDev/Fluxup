@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Fluxup.Core;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -20,6 +21,8 @@ namespace Fluxup.Updater.Github
         public GithubUpdateEntry[] Updates { get; }
 
         public Version NewestUpdateVersion { get; }
+
+        public bool UpdateRequired => throw new NotImplementedException();
 
         public async Task<string[]> FetchReleaseNotes()
         {

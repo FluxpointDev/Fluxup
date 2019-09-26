@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.CompilerServices;
 
-namespace Fluxup.Updater.Logging
+namespace Fluxup.Core.Logging
 {
     public class Logger
     {

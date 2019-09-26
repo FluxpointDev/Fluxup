@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace Fluxup.Updater
+namespace Fluxup.Core
 {
     public interface IUpdateFetcher<TUpdateInfo, TUpdateEntry>
     where TUpdateInfo : IUpdateInfo<TUpdateEntry>

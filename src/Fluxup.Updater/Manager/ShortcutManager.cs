@@ -3,8 +3,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Fluxup.Updater.Logging;
-using Fluxup.Updater.OS;
+using Fluxup.Core.Logging;
+using Fluxup.Core.OS;
 
 namespace Fluxup.Updater.Manager
 {
@@ -52,7 +52,7 @@ namespace Fluxup.Updater.Manager
             Logger.Debug($"assemblyDescription: {assemblyDescription ?? "N/A"}");
             Logger.Debug($"shortcutFileLocation: {shortcutFileLocation}");
 
-            switch (OS.OperatingSystem.OSPlatform)
+            switch (Core.OS.OperatingSystem.OSPlatform)
             {
                 case OSPlatform.Windows:
                     {
@@ -137,7 +137,7 @@ namespace Fluxup.Updater.Manager
         /// <param name="folderName">The folder that will contain the shortcut.</param>
         public static void RemoveShortcut(ShortcutLocation shortcutLocation, string folderName = default)
         {
-            if (OS.OperatingSystem.OnMacOS)
+            if (Core.OS.OperatingSystem.OnMacOS)
             {
                 Logger.Error("Can't manage shortcut's for macOS");
                 return;
@@ -171,7 +171,7 @@ namespace Fluxup.Updater.Manager
         /// <returns>if the shortcut exists</returns>
         public static bool DoesShortcutExist(ShortcutLocation shortcutLocation, string folderName = default)
         {
-            if (OS.OperatingSystem.OnMacOS)
+            if (Core.OS.OperatingSystem.OnMacOS)
             {
                 Logger.Error("Can't manage shortcut's for macOS");
                 return false;
@@ -198,7 +198,7 @@ namespace Fluxup.Updater.Manager
                 Environment.GetFolderPath(Environment.SpecialFolder.StartMenu) :
                 Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
 
-            if (shortcutLocation == ShortcutLocation.StartMenu && OS.OperatingSystem.OnWindows)
+            if (shortcutLocation == ShortcutLocation.StartMenu && Core.OS.OperatingSystem.OnWindows)
             {
                 if (Directory.Exists(Path.Combine(fileLocation, "Programs")))
                 {
@@ -214,7 +214,7 @@ namespace Fluxup.Updater.Manager
         /// <returns>Shortcut file type</returns>
         private static string GetShortcutFileType()
         {
-            switch (OS.OperatingSystem.OSPlatform)
+            switch (Core.OS.OperatingSystem.OSPlatform)
             {
                 case OSPlatform.Windows:
                     return WindowsFileType;

@@ -1,4 +1,4 @@
-namespace Fluxup.Updater.Exceptions
+namespace Fluxup.Core.Exceptions
 {
     public class OSUnknownException : System.Exception
     {

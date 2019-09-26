@@ -1,7 +1,7 @@
 using System.Runtime.InteropServices;
-using Fluxup.Updater.Exceptions;
+using Fluxup.Core.Exceptions;
 
-namespace Fluxup.Updater.OS
+namespace Fluxup.Core.OS
 {
     public static class OperatingSystem
     {
