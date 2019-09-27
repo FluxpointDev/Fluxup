@@ -14,8 +14,8 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 3.0.100
-    - name: Build and Pack Library with .NET Core
-      run: .\Build.ps1
+    - name: Pack Library with .NET Core
+      run: dotnet pack --configuration Release
     # - name: Setup Nuget.exe
     #  uses: warrenbuckley/Setup-Nuget@v1
     # - name: Add GitHub Packages Source to Nuget.exe
