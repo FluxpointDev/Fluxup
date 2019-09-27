@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.7" />
+    <PackageReference Include="SemanticVersion" Version="2.0.0" />
   </ItemGroup>
   
 </Project>

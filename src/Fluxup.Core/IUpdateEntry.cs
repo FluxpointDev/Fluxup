@@ -1,4 +1,4 @@
-﻿using System;
+﻿using SemVersion;
 using System.Threading.Tasks;
 
 namespace Fluxup.Core
@@ -9,7 +9,7 @@ namespace Fluxup.Core
         long Filesize { get; }
         bool IsDelta { get; }
         string SHA1 { get; }
-        Version Version { get; }
+        SemanticVersion Version { get; }
 
         Task<string> FetchReleaseNote();
     }

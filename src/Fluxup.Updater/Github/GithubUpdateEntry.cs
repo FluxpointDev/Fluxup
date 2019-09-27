@@ -1,4 +1,5 @@
 ﻿using System;
+using SemVersion;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
@@ -39,7 +40,7 @@ namespace Fluxup.Updater.Github
         public string SHA1 { get; }
 
         /// <inheritdoc/>
-        public Version Version => throw new NotImplementedException();
+        public SemanticVersion Version => throw new NotImplementedException();
 
         /// <inheritdoc/>
         public async Task<string> FetchReleaseNote()

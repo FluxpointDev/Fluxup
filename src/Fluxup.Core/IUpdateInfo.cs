@@ -1,4 +1,4 @@
-﻿using System;
+﻿using SemVersion;
 using System.Threading.Tasks;
 
 namespace Fluxup.Core
@@ -9,7 +9,7 @@ namespace Fluxup.Core
         bool HasUpdate { get; }
         bool UpdateRequired { get; }
         TUpdateEntry[] Updates { get; }
-        Version NewestUpdateVersion { get; }
+        SemanticVersion NewestUpdateVersion { get; }
         
         Task<string[]> FetchReleaseNotes();
     }

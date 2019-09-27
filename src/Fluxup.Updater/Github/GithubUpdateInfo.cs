@@ -1,4 +1,5 @@
 ﻿using Fluxup.Core;
+using SemVersion;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,7 +21,7 @@ namespace Fluxup.Updater.Github
 
         public GithubUpdateEntry[] Updates { get; }
 
-        public Version NewestUpdateVersion { get; }
+        public SemanticVersion NewestUpdateVersion { get; }
 
         public bool UpdateRequired => throw new NotImplementedException();
 
