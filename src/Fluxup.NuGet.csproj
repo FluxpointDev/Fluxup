@@ -1,14 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-      <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 	  <Authors>Fluxpoint</Authors>
-      <Company>Fluxpoint</Company>
-      <PackageProjectUrl></PackageProjectUrl>
-      <RepositoryUrl>https://github.com/FluxpointDev/Fluxup</RepositoryUrl>
-      <Version>0.0.0.2</Version>
-      <Description>Welcome to the world of cross platform Updating Wew!!</Description>
-      <Copyright>MIT</Copyright>
+    <Company>Fluxpoint</Company>
+    <PackageProjectUrl></PackageProjectUrl>
+    <RepositoryUrl>https://github.com/FluxpointDev/Fluxup</RepositoryUrl>
+    <Version>0.0.0.2</Version>
+    <Description>Welcome to the world of cross platform Updating Wew!!</Description>
+    <Copyright>MIT</Copyright>
+	  <LangVersion>preview</LangVersion>
+    <DocumentationFile>bin\$(AssemblyName).xml</DocumentationFile>
   </PropertyGroup>
 
 </Project>

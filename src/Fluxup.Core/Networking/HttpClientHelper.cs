@@ -1,6 +1,6 @@
 ﻿using System.Net.Http;
 
-namespace Fluxup.Core
+namespace Fluxup.Core.Networking
 {
     public static class HttpClientHelper
     {

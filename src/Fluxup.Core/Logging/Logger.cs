@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.CompilerServices;
 
+[assembly: InternalsVisibleTo("Fluxup.Updater", AllInternalsVisible = true)]
 namespace Fluxup.Core.Logging
 {
     public class Logger

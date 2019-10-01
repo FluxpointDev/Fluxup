@@ -11,7 +11,7 @@ namespace Fluxup.Example
     public static class Program
     {
         private static Logger Logger = new Logger("Example Application");
-        private static GithubUpdateFetcher updateFetcher = new GithubUpdateFetcher("osu", "ppy", "osu");
+        private static GithubUpdateFetcher updateFetcher = new GithubUpdateFetcher("Fluxup", "ppy", "osu");
 
         private static async Task Main(string[] args)
         {

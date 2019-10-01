@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
     <PackageId>Fluxup.Core</PackageId>
     <PackageReleaseNotes>* First Release, did this so mobile support can be a thing one day :)</PackageReleaseNotes>
   </PropertyGroup>
