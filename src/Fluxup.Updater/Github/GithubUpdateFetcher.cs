@@ -31,10 +31,10 @@ namespace Fluxup.Updater.Github
         public string ApplicationName { get; }
 
         /// <inheritdoc/>
-        public string IsInstalledApp => throw new NotImplementedException();
+        public bool IsInstalledApp { get; } = Updater.IsInstalledApp.GetInstalledStatus();
 
         /// <inheritdoc/>
-        public bool IsCheckingForUpdate { get; }
+        public bool IsCheckingForUpdate { get; private set; }
 
         /// <inheritdoc/>
         public bool IsDownloadingUpdates { get; }
@@ -42,6 +42,7 @@ namespace Fluxup.Updater.Github
         /// <inheritdoc/>
         public bool IsInstallingUpdates { get; }
 
+        //TODO: Use this when getting updates
         /// <inheritdoc/>
         public string UpdateChannel { get; }
 
@@ -58,12 +59,15 @@ namespace Fluxup.Updater.Github
         /// <inheritdoc/>
         public async Task<GithubUpdateInfo> CheckForUpdate(bool useDeltaPatching = true)
         {
+            IsCheckingForUpdate = true;
+            
             using var httpClient = HttpClientHelper.CreateHttpClient(ApplicationName);
             using var responseMessage = await httpClient.GetAsyncLogged(GithubApiRoot + $"/repos/{OwnerUsername}/{RepoName}/releases/latest");
 
             var json = await responseMessage.Content.ReadAsStringAsync();
             if (string.IsNullOrEmpty(json))
             {
+                IsCheckingForUpdate = false;
                 return Logger.ErrorAndReturnDefault<GithubUpdateInfo>
                     ("\r\nWe are given no response from github, can't continue..." +
                     responseMessage.ErrorResponseMessage());
@@ -71,6 +75,7 @@ namespace Fluxup.Updater.Github
             else if (!responseMessage.IsSuccessStatusCode)
             {
                 var error = JsonConvert.DeserializeObject<GithubError>(json);
+                IsCheckingForUpdate = false;
                 return Logger.ErrorAndReturnDefault<GithubUpdateInfo>
                     ($"\r\nResponse gave a unsuccessful status code, maybe you haven't released a update yet or typed your github username/repo incorrectly?" +
                     responseMessage.ErrorResponseMessage() +
@@ -80,8 +85,9 @@ namespace Fluxup.Updater.Github
 
             var releases = JsonConvert.DeserializeObject<GithubRelease>(json);
             var release = releases.Assets.Where(x => x.Name == "RELEASES");
-            if (release.Count() == 0)
+            if (!release.Any())
             {
+                IsCheckingForUpdate = false;
                 return Logger.ErrorAndReturnDefault<GithubUpdateInfo>
                     ("They is no RELEASES file, assumed to have no updates");
             }
@@ -94,12 +100,14 @@ namespace Fluxup.Updater.Github
             var releaseFile = await releaseFileContent.Content.ReadAsStringAsync();
             if (!releaseFileContent.IsSuccessStatusCode)
             {
+                IsCheckingForUpdate = false;
                 return Logger.ErrorAndReturnDefault<GithubUpdateInfo>
                     ("\r\nSomething happened while getting the RELEASES file" +
                     responseMessage.ErrorResponseMessage());
             }
             else if (string.IsNullOrEmpty(releaseFile))
             {
+                IsCheckingForUpdate = false;
                 return Logger.ErrorAndReturnDefault<GithubUpdateInfo>
                     ("RELEASES file has no content");
             }
@@ -119,27 +127,29 @@ namespace Fluxup.Updater.Github
 
             foreach (var asset in releases.Assets)
             {
-                if (asset.Name != "RELEASES" && githubUpdateEntrys.ContainsKey(asset.Name) &&
-                    !githubUpdateEntrys[asset.Name].AddVersionAndDeltaFromFileName(asset.Name))
-                {
-                    var fileStream = await httpClient.GetStreamAsyncLogged(asset.BrowserDownloadUrl);
+                if (!asset.Name.EndsWith(".nupkg") ||
+                    asset.Name == "RELEASES" || !githubUpdateEntrys.ContainsKey(asset.Name) ||
+                    githubUpdateEntrys[asset.Name].AddVersionAndDeltaFromFileName(asset.Name)) continue;
+                
+                var fileStream = await httpClient.GetStreamAsyncLogged(asset.BrowserDownloadUrl);
+                
+                using var packageReader = new PackageArchiveReader(fileStream);
+                var nuspecReader = await packageReader.GetNuspecReaderAsync(default);
+                githubUpdateEntrys[asset.Name].Version = nuspecReader.GetMetadataValue("version").ParseVersion();
 
-                    using var packageReader = new PackageArchiveReader(fileStream);
-                    var nuspecReader = await packageReader.GetNuspecReaderAsync(default);
-                    githubUpdateEntrys[asset.Name].Version = nuspecReader.GetMetadataValue("version").ParseVersion();
-                    foreach (var entry in await packageReader.GetFilesAsync(default))
+                foreach (var entry in await packageReader.GetFilesAsync(default))
+                {
+                    if (string.IsNullOrEmpty(entry) || entry.EndsWith("/"))
                     {
-                        if (string.IsNullOrEmpty(entry) || entry.EndsWith("/"))
-                        {
-                            continue;
-                        }
-                        githubUpdateEntrys[asset.Name].IsDelta = entry.EndsWith(".shasum") || entry.EndsWith(".diff");
-                        break;
+                        continue;
                     }
+                    githubUpdateEntrys[asset.Name].IsDelta = entry.EndsWith(".shasum") || entry.EndsWith(".diff");
+                    break;
                 }
             }
 
             GC.Collect();
+            IsCheckingForUpdate = false;
             return new GithubUpdateInfo(githubUpdateEntrys.Values);
         }
 

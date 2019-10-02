@@ -29,5 +29,6 @@ namespace Fluxup.Core.OS
         public static bool OnWindows { get; }
         public static bool OnMacOS { get; }
         public static bool OnLinux { get; }
+        public static bool OnAndroid { get; }
     }
 }

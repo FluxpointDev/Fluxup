@@ -8,7 +8,7 @@ namespace Fluxup.Core
     where TUpdateEntry : IUpdateEntry
     {
         string ApplicationName { get; }
-        string IsInstalledApp { get; }
+        bool IsInstalledApp { get; }
         bool IsCheckingForUpdate { get; }
         bool IsDownloadingUpdates { get; }
         bool IsInstallingUpdates { get; }

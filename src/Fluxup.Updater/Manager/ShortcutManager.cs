@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Fluxup.Core.Exceptions;
 using Fluxup.Core.Logging;
 using Fluxup.Core.OS;
 
@@ -71,18 +72,18 @@ namespace Fluxup.Updater.Manager
                         Process.Start(new ProcessStartInfo("wscript", "shortcut.vbs")
                         {
                             CreateNoWindow = true
-                        }).WaitForExit();
-                        Logger.Debug($"Shortcut should have been made, deleting shortcut.vbs");
+                        })?.WaitForExit();
+                        Logger.Debug("Shortcut should have been made, deleting shortcut.vbs");
                         File.Delete("shortcut.vbs");
                     }
                     break;
                 case OSPlatform.Linux:
                     {
                         var categoryContent = "";
-                        var catCount = applicationCategories.Length;
+                        var catCount = applicationCategories?.Length;
                         var isTerminalApp = false;
                         var doneAudioVideoCheck = false;
-                        Logger.Debug($"Amount of categories application applys to: {catCount}");
+                        Logger.Debug($"Amount of categories this application applies to: {catCount}");
 
                         for (var i = 0; i < catCount; i++)
                         {
@@ -91,7 +92,7 @@ namespace Fluxup.Updater.Manager
                             {
                                 case ApplicationCategory.ConsoleOnly:
                                     isTerminalApp = true;
-                                    Logger.Debug($"Application is a console app");
+                                    Logger.Debug("Application is a console app");
                                     break;
                                 case ApplicationCategory.Audio:
                                 case ApplicationCategory.Video:
@@ -109,7 +110,7 @@ namespace Fluxup.Updater.Manager
                         if (linuxUiLib != LinuxUILib.None)
                         {
                             categoryContent += linuxUiLib + ";";
-                            Logger.Debug($"Application is a linux application");
+                            Logger.Debug("Application is a linux application");
                         }
                         var shortcutContent =
                             "[Desktop Entry]\r\n" +
@@ -127,6 +128,11 @@ namespace Fluxup.Updater.Manager
                 case OSPlatform.MacOS:
                     Logger.Error("Can't manage shortcut's for macOS");
                     return;
+                case OSPlatform.Android:
+                    Logger.Error("This package doesn't work with Android...");
+                    return;
+                default:
+                    throw new OSUnknownException();
             }
         }
 
@@ -140,6 +146,11 @@ namespace Fluxup.Updater.Manager
             if (Core.OS.OperatingSystem.OnMacOS)
             {
                 Logger.Error("Can't manage shortcut's for macOS");
+                return;
+            }
+            if (Core.OS.OperatingSystem.OnAndroid)
+            {
+                Logger.Error("This package doesn't work with Android...");
                 return;
             }
 
@@ -173,8 +184,13 @@ namespace Fluxup.Updater.Manager
         {
             if (Core.OS.OperatingSystem.OnMacOS)
             {
-                Logger.Error("Can't manage shortcut's for macOS");
-                return false;
+                return Logger.ErrorAndReturnDefault<bool>
+                    ("Can't manage shortcut's for macOS");
+            }
+            if (Core.OS.OperatingSystem.OnAndroid)
+            {
+                return Logger.ErrorAndReturnDefault<bool>
+                    ("This package doesn't work with Android...");
             }
             
             var shortcutFileLocation = GetShortcutFileLocation(shortcutLocation);
@@ -198,14 +214,10 @@ namespace Fluxup.Updater.Manager
                 Environment.GetFolderPath(Environment.SpecialFolder.StartMenu) :
                 Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
 
-            if (shortcutLocation == ShortcutLocation.StartMenu && Core.OS.OperatingSystem.OnWindows)
-            {
-                if (Directory.Exists(Path.Combine(fileLocation, "Programs")))
-                {
-                    return Path.Combine(fileLocation, "Programs");
-                }
-            }
-            return fileLocation;
+            return shortcutLocation == ShortcutLocation.StartMenu && 
+                   Core.OS.OperatingSystem.OnWindows && Directory.Exists(Path.Combine(fileLocation, "Programs")) ?
+                Path.Combine(fileLocation, "Programs") :
+                fileLocation;
         }
 
         /// <summary>
@@ -221,10 +233,13 @@ namespace Fluxup.Updater.Manager
                 case OSPlatform.Linux:
                     return LinuxFileType;
                 case OSPlatform.MacOS:
-                    Logger.Error("Can't manage shortcut's for macOS");
-                    return "";
+                    return Logger.ErrorAndReturnDefault<string>
+                        ("Can't manage shortcut's for macOS");
+                case OSPlatform.Android:
+                    return Logger.ErrorAndReturnDefault<string>
+                        ("This package doesn't work with Android...");
                 default:
-                    return "";
+                    throw new OSUnknownException();
             }
         }
     }

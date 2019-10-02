@@ -31,13 +31,15 @@ namespace Fluxup.Updater.Github
                 default:
                     return false;
             }
-            if (SemVersion.SemanticVersion.TryParse(fileName.Remove(0, index + 1).Remove(lastIndex - index - 1), out var version))
+            if (!SemVersion.SemanticVersion.TryParse(fileName.Remove(0, index + 1)
+                .Remove(lastIndex - index - 1), out var version))
             {
-                updateEntry.Version = version;
-                return true;
+                return false;
             }
 
-            return false;
+            updateEntry.Version = version;
+            return true;
+
         }
     }
 }
