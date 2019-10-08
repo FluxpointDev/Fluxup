@@ -10,29 +10,29 @@ namespace Fluxup.Updater
 {
     internal static class IsInstalledApp
     {
-        private static Logger Logger = new Logger("IsInstalledApp");
-        private static Assembly appAssembly = Assembly.GetExecutingAssembly();
-        private static Version appVersion = appAssembly.GetName().Version;
-        private static string appPath = Path.GetDirectoryName(appAssembly.Location);
+        private static readonly Logger Logger = new Logger("IsInstalledApp");
+        private static readonly Assembly AppAssembly = Assembly.GetExecutingAssembly();
+        private static readonly Version AppVersion = AppAssembly.GetName().Version;
+        private static readonly string AppPath = Path.GetDirectoryName(AppAssembly.Location);
         
+        /// <summary>
+        /// Gets if the application is installed
+        /// </summary>
         public static bool GetInstalledStatus()
         {
-            switch (OperatingSystem.OSPlatform)
+            return OperatingSystem.OSPlatform switch
             {
-                case OSPlatform.Windows:
-                case OSPlatform.Linux:
-                    return appPath.EndsWith(appVersion.ToString()) &&
-                           File.Exists(appPath.Replace(appVersion.ToString(),
-                               appAssembly.GetName().Name + ExecutableFileType.GetExecutableFileType()));
-                case OSPlatform.MacOS:
-                    break; //TODO: See how it sees applications packaged in a .app folder (or "macOS app")
-                case OSPlatform.Android:
-                    return Logger.ErrorAndReturnDefault<bool>("This package doesn't work with Android...");
-                default:
-                    throw new OSUnknownException();
-            }
-            
-            return false;
+                OSPlatform.Windows => LinuxAndWindowsInstallStatus,
+                OSPlatform.Linux => LinuxAndWindowsInstallStatus,
+                OSPlatform.MacOS => false, //TODO: See how it sees applications packaged in a .app folder (or "macOS app")
+                OSPlatform.Android => Logger.ErrorAndReturnDefault<bool>("This package doesn't work with Android..."),
+                _ => throw new OSUnknownException()
+            };
         }
+
+        private static bool LinuxAndWindowsInstallStatus =>
+            AppPath.EndsWith(AppVersion.ToString()) &&
+            File.Exists(AppPath.Replace(AppVersion.ToString(),
+            AppAssembly.GetName().Name + ExecutableFileType.GetExecutableFileType()));
     }
 }

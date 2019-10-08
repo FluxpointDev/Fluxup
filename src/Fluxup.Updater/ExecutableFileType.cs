@@ -1,4 +1,3 @@
-using System;
 using Fluxup.Core.Exceptions;
 using Fluxup.Core.Logging;
 using Fluxup.Core.OS;
@@ -7,23 +6,21 @@ namespace Fluxup.Updater
 {
     internal static class ExecutableFileType
     {
-        private static Logger Logger = new Logger("ExecutableFileType");
+        private static readonly Logger Logger = new Logger("ExecutableFileType");
         
+        /// <summary>
+        /// Gets the executable file type of the application
+        /// </summary>
         public static string GetExecutableFileType()
         {
-            switch (Core.OS.OperatingSystem.OSPlatform)
+            return OperatingSystem.OSPlatform switch
             {
-                case OSPlatform.Windows:
-                    return ".exe";
-                case OSPlatform.MacOS:
-                    return ".app";
-                case OSPlatform.Linux:
-                    return "";
-                case OSPlatform.Android:
-                    return Logger.ErrorAndReturnDefault<string>("This package doesn't work with Android...");
-                default:
-                    throw new OSUnknownException();
-            }
+                OSPlatform.Windows => ".exe",
+                OSPlatform.MacOS => ".app",
+                OSPlatform.Linux => "",
+                OSPlatform.Android => Logger.ErrorAndReturnDefault<string>("This package doesn't work with Android..."),
+                _ => throw new OSUnknownException()
+            };
         }
     }
 }

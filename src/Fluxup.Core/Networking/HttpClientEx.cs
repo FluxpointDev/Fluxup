@@ -6,10 +6,19 @@ using System.Threading.Tasks;
 
 namespace Fluxup.Core.Networking
 {
+    /// <summary>
+    /// HttpClient extensions
+    /// </summary>
     public static class HttpClientEx
     {
-        private static Logger Logger = new Logger("Networking");
+        private static readonly Logger Logger = new Logger("Networking");
 
+        /// <summary>
+        /// Gets a Stream from the internet
+        /// </summary>
+        /// <param name="httpClient">http client</param>
+        /// <param name="requestUri">Uri to get a stream from</param>
+        /// <returns>Stream from the internet</returns>
         public static async Task<Stream> GetStreamAsyncLogged(this HttpClient httpClient, string requestUri)
         {
             Logger.Information($"Uri to grab stream from: {requestUri}");
@@ -17,19 +26,32 @@ namespace Fluxup.Core.Networking
             if (stream == null)
             {
                 Logger.Warning("Stream is null");
+                return null;
             }
             if (!stream.CanRead)
             {
-                Logger.Warning("You can't read the stream, this is likely not going to be useable stream");
+                Logger.Warning("You can't read the stream, this is likely not going to be usable stream");
             }
             return stream;
         }
 
+        /// <summary>
+        /// Gets a Stream from the internet
+        /// </summary>
+        /// <param name="httpClient">http client</param>
+        /// <param name="uri">Uri to get a stream from</param>
+        /// <returns>Stream from the internet</returns>
         public static async Task<Stream> GetStreamAsyncLogged(this HttpClient httpClient, Uri uri)
         {
             return await GetStreamAsyncLogged(httpClient, uri.AbsoluteUri);
         }
 
+        /// <summary>
+        /// Gets a HttpResponseMessage from the internet
+        /// </summary>
+        /// <param name="httpClient">http client</param>
+        /// <param name="requestUri">Uri to get a HttpResponseMessage from</param>
+        /// <returns>HttpResponseMessage from the internet</returns>
         public static async Task<HttpResponseMessage> GetAsyncLogged(this HttpClient httpClient, string requestUri)
         {
             Logger.Information($"Uri to grab content from: {requestUri}");
@@ -41,6 +63,12 @@ namespace Fluxup.Core.Networking
             return re;
         }
 
+        /// <summary>
+        /// Gets a HttpResponseMessage from the internet
+        /// </summary>
+        /// <param name="httpClient">http client</param>
+        /// <param name="uri">Uri to get a HttpResponseMessage from</param>
+        /// <returns>HttpResponseMessage from the internet</returns>
         public static async Task<HttpResponseMessage> GetAsyncLogged(this HttpClient httpClient, Uri uri)
         {
             return await GetAsyncLogged(httpClient, uri.AbsoluteUri);

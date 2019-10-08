@@ -60,7 +60,7 @@ namespace Fluxup.Updater.Github
         public Asset[] Assets { get; private set; }
     }
 
-    internal partial class Asset
+    internal class Asset
     {
         [JsonProperty("url")]
         public Uri Url { get; private set; }
@@ -102,7 +102,7 @@ namespace Fluxup.Updater.Github
         public Author Uploader { get; private set; }
     }
 
-    internal partial class Author
+    internal class Author
     {
         [JsonProperty("login")]
         public string Login { get; private set; }

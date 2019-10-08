@@ -1,17 +1,33 @@
 ﻿using System;
 
+// ReSharper disable CommentTypo
+// ReSharper disable IdentifierTypo
 namespace Fluxup.Updater.Manager
 {
+    /// <summary>
+    /// Allows you to pin and unpin your application
+    /// </summary>
     public static class TaskbarManager
     {
-        public static  bool IsPinnedToTaskbar { get; }
+        /// <summary>
+        /// If the application is pinned to the taskbar
+        /// </summary>
+        public static bool IsPinnedToTaskbar { get; }
 
-        public static  void PinToTaskbar()
+        /// <summary>
+        /// Pins your application to the taskbar
+        /// </summary>
+        /// <exception cref="NotImplementedException">This has not been implemented yet</exception>
+        public static void PinToTaskbar()
         {
             throw new NotImplementedException();
         }
 
-        public static  void UnpinToTaskbar()
+        /// <summary>
+        /// Unpins your application to the taskbar
+        /// </summary>
+        /// <exception cref="NotImplementedException">This has not been implemented yet</exception>
+        public static void UnpinToTaskbar()
         {
             throw new NotImplementedException();
         }

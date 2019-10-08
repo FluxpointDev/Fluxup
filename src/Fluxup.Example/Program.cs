@@ -37,14 +37,12 @@ namespace Fluxup.Example
                         e =>
                         {
                             Console.WriteLine("Update download failed :(");
-                            return;
                         });
                     await updateFetcher.InstallUpdates(info.Updates, 
                         d => Console.WriteLine($"Update install progress is {d}%"),
                         e =>
                         {
                             Console.WriteLine("Update download failed :(");
-                            return;
                         });
                     Console.WriteLine("Update has downloaded and installed, restart app to apply update");
                 });

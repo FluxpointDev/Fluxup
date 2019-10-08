@@ -4,11 +4,11 @@ using Fluxup.Core;
 using Newtonsoft.Json;
 using Fluxup.Core.Networking;
 
+// ReSharper disable MemberCanBePrivate.Global
+// ReSharper disable IdentifierTypo
 namespace Fluxup.Updater.Github
 {
-    /// <summary>
-    /// Application update
-    /// </summary>
+    /// <inheritdoc cref="Fluxup.Core.IUpdateEntry"/>
     public class GithubUpdateEntry : IUpdateEntry
     {
         internal GithubUpdateEntry(long releaseId, string sha1, string filename, long filesize, ref GithubUpdateFetcher githubUpdateFetcher)
@@ -21,7 +21,7 @@ namespace Fluxup.Updater.Github
         }
 
         /// <summary>
-        /// Fetcher that made this
+        /// Fetcher that made this <see cref="GithubUpdateEntry"/>
         /// </summary>
         private GithubUpdateFetcher GithubUpdateFetcher { get; }
 
@@ -30,23 +30,23 @@ namespace Fluxup.Updater.Github
         /// </summary>
         public long ReleaseId { get; }
 
-        /// <inheritdoc/>
+        /// <inheritdoc cref="Fluxup.Core.IUpdateEntry.Filename"/>
         public string Filename { get; }
 
-        /// <inheritdoc/>
+        /// <inheritdoc cref="Fluxup.Core.IUpdateEntry.Filesize"/>
         public long Filesize { get; }
 
-        /// <inheritdoc/>
+        /// <inheritdoc cref="Fluxup.Core.IUpdateEntry.IsDelta"/>
         public bool IsDelta { get; internal set; }
 
-        /// <inheritdoc/>
+        /// <inheritdoc cref="Fluxup.Core.IUpdateEntry.SHA1"/>
         public string SHA1 { get; }
 
-        /// <inheritdoc/>
+        /// <inheritdoc cref="Fluxup.Core.IUpdateEntry.Version"/>
         public SemanticVersion Version { get; internal set; }
 
 
-        /// <inheritdoc/>
+        /// <inheritdoc cref="Fluxup.Core.IUpdateEntry.FetchReleaseNote()"/>
         public async Task<string> FetchReleaseNote()
         {
             using var httpClient = HttpClientHelper.CreateHttpClient(GithubUpdateFetcher.ApplicationName);

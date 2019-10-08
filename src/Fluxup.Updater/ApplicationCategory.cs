@@ -1,8 +1,13 @@
 // ReSharper disable UnusedMember.Global
 // ReSharper disable InconsistentNaming
+// ReSharper disable CommentTypo
+// ReSharper disable IdentifierTypo
 namespace Fluxup.Updater
 {
     //Based on https://specifications.freedesktop.org/menu-spec/latest/apas02.html
+    /// <summary>
+    /// Categories that your application is in.
+    /// </summary>
     public enum ApplicationCategory
     {
         /////////////////////
@@ -253,7 +258,7 @@ namespace Fluxup.Updater
         TelephonyTools,
         
         /// <summary>
-        /// Sofware for viewing maps, navigation, mapping, GPS
+        /// Software for viewing maps, navigation, mapping, GPS
         /// </summary>
         Maps,
         

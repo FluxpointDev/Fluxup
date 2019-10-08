@@ -1,7 +1,8 @@
-﻿using Fluxup.Core;
-
-namespace Fluxup.Updater.Github
+﻿namespace Fluxup.Updater.Github
 {
+    /// <summary>
+    /// Extensions for <see cref="Fluxup.Updater.Github.GithubUpdateFetcher"/>
+    /// </summary>
     public static class GithubUpdateFetcherEx
     {
         internal static bool AddVersionAndDeltaFromFileName(this GithubUpdateEntry updateEntry, string fileName)

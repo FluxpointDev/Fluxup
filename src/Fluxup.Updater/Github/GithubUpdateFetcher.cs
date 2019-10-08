@@ -8,16 +8,26 @@ using System.Threading.Tasks;
 using NuGet.Packaging;
 using Fluxup.Core.Networking;
 
+// ReSharper disable InconsistentNaming
 namespace Fluxup.Updater.Github
 {
     //TODO: Make it not use a load of ram when looking for files that show if it's a delta package
-
+    /// <summary>
+    /// Manage updates with using Github as your update source 
+    /// </summary>
     public class GithubUpdateFetcher : IUpdateFetcher<GithubUpdateInfo, GithubUpdateEntry>
     {
         private GithubUpdateFetcher @this;
         internal const string GithubApiRoot = "https://api.github.com";
         private readonly Logger Logger = new Logger("GithubUpdateFetcher");
 
+        /// <summary>
+        /// Makes <see cref="GithubUpdateFetcher"/>
+        /// </summary>
+        /// <param name="applicationName">The applications name</param>
+        /// <param name="ownerUsername">The owners username</param>
+        /// <param name="repoName">The name of the repo the updates are sourced from</param>
+        /// <param name="updateChannel">What channel you want to look at</param>
         public GithubUpdateFetcher(string applicationName, string ownerUsername, string repoName, string updateChannel = default)
         {
             @this = this;
@@ -27,36 +37,36 @@ namespace Fluxup.Updater.Github
             UpdateChannel = updateChannel;
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc cref="Fluxup.Core.IUpdateFetcher{TUpdateInfo,TUpdateEntry}.ApplicationName"/>
         public string ApplicationName { get; }
 
-        /// <inheritdoc/>
+        /// <inheritdoc cref="Fluxup.Core.IUpdateFetcher{TUpdateInfo,TUpdateEntry}.IsInstalledApp"/>
         public bool IsInstalledApp { get; } = Updater.IsInstalledApp.GetInstalledStatus();
 
-        /// <inheritdoc/>
+        /// <inheritdoc cref="Fluxup.Core.IUpdateFetcher{TUpdateInfo,TUpdateEntry}.IsCheckingForUpdate"/>
         public bool IsCheckingForUpdate { get; private set; }
 
-        /// <inheritdoc/>
+        /// <inheritdoc cref="Fluxup.Core.IUpdateFetcher{TUpdateInfo,TUpdateEntry}.IsDownloadingUpdates"/>
         public bool IsDownloadingUpdates { get; }
 
-        /// <inheritdoc/>
+        /// <inheritdoc cref="Fluxup.Core.IUpdateFetcher{TUpdateInfo,TUpdateEntry}.IsInstallingUpdates"/>
         public bool IsInstallingUpdates { get; }
 
         //TODO: Use this when getting updates
-        /// <inheritdoc/>
-        public string UpdateChannel { get; }
+        /// <inheritdoc cref="Fluxup.Core.IUpdateFetcher{TUpdateInfo,TUpdateEntry}.UpdateChannel"/>
+        public string UpdateChannel { get; set; }
 
         /// <summary>
-        /// 
+        /// The owners username
         /// </summary>
         public string OwnerUsername { get; }
 
         /// <summary>
-        /// 
+        /// The repos name
         /// </summary>
         public string RepoName { get; }
 
-        /// <inheritdoc/>
+        /// <inheritdoc cref="Fluxup.Core.IUpdateFetcher{TUpdateInfo,TUpdateEntry}.CheckForUpdate(bool)"/>
         public async Task<GithubUpdateInfo> CheckForUpdate(bool useDeltaPatching = true)
         {
             IsCheckingForUpdate = true;
@@ -113,7 +123,7 @@ namespace Fluxup.Updater.Github
             }
 
             var releaseUpdates = releaseFile.Split('\r');
-            var githubUpdateEntrys = new Dictionary<string, GithubUpdateEntry>();
+            var githubUpdateEntries = new Dictionary<string, GithubUpdateEntry>();
             foreach (var update in releaseUpdates)
             {
                 if (string.IsNullOrEmpty(update.Trim()))
@@ -122,20 +132,20 @@ namespace Fluxup.Updater.Github
                 }
 
                 var fileSplit = update.Split(' ');
-                githubUpdateEntrys.Add(fileSplit[1], new GithubUpdateEntry(releases.Id, fileSplit[0], fileSplit[1], long.Parse(fileSplit[2]), ref @this));
+                githubUpdateEntries.Add(fileSplit[1], new GithubUpdateEntry(releases.Id, fileSplit[0], fileSplit[1], long.Parse(fileSplit[2]), ref @this));
             }
 
             foreach (var asset in releases.Assets)
             {
                 if (!asset.Name.EndsWith(".nupkg") ||
-                    asset.Name == "RELEASES" || !githubUpdateEntrys.ContainsKey(asset.Name) ||
-                    githubUpdateEntrys[asset.Name].AddVersionAndDeltaFromFileName(asset.Name)) continue;
+                    asset.Name == "RELEASES" || !githubUpdateEntries.ContainsKey(asset.Name) ||
+                    githubUpdateEntries[asset.Name].AddVersionAndDeltaFromFileName(asset.Name)) continue;
                 
                 var fileStream = await httpClient.GetStreamAsyncLogged(asset.BrowserDownloadUrl);
                 
                 using var packageReader = new PackageArchiveReader(fileStream);
                 var nuspecReader = await packageReader.GetNuspecReaderAsync(default);
-                githubUpdateEntrys[asset.Name].Version = nuspecReader.GetMetadataValue("version").ParseVersion();
+                githubUpdateEntries[asset.Name].Version = nuspecReader.GetMetadataValue("version").ParseVersion();
 
                 foreach (var entry in await packageReader.GetFilesAsync(default))
                 {
@@ -143,35 +153,35 @@ namespace Fluxup.Updater.Github
                     {
                         continue;
                     }
-                    githubUpdateEntrys[asset.Name].IsDelta = entry.EndsWith(".shasum") || entry.EndsWith(".diff");
+                    githubUpdateEntries[asset.Name].IsDelta = entry.EndsWith(".shasum") || entry.EndsWith(".diff");
                     break;
                 }
             }
 
             GC.Collect();
             IsCheckingForUpdate = false;
-            return new GithubUpdateInfo(githubUpdateEntrys.Values);
+            return new GithubUpdateInfo(githubUpdateEntries.Values);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc cref="Fluxup.Core.IUpdateFetcher{TUpdateInfo,TUpdateEntry}.DownloadUpdates(TUpdateEntry[], System.Action{System.Double}, System.Action{System.Exception})"/>
         public Task DownloadUpdates(GithubUpdateEntry[] updateEntry, Action<double> progress = default, Action<Exception> downloadFailed = default)
         {
             throw new NotImplementedException();
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc cref="Fluxup.Core.IUpdateFetcher{TUpdateInfo,TUpdateEntry}.DownloadUpdates(Action{double}, Action{Exception})"/>
         public Task DownloadUpdates(Action<double> progress = default, Action<Exception> downloadFailed = default)
         {
             throw new NotImplementedException();
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc cref="Fluxup.Core.IUpdateFetcher{TUpdateInfo,TUpdateEntry}.InstallUpdates(TUpdateEntry[], System.Action{System.Double}, System.Action{System.Exception})"/>
         public Task InstallUpdates(GithubUpdateEntry[] updateEntry, Action<double> progress = default, Action<Exception> installFailed = default)
         {
             throw new NotImplementedException();
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc cref="Fluxup.Core.IUpdateFetcher{TUpdateInfo,TUpdateEntry}.InstallUpdates(Action{double}, Action{Exception})"/>
         public Task InstallUpdates(Action<double> progress = default, Action<Exception> installFailed = default)
         {
             throw new NotImplementedException();
