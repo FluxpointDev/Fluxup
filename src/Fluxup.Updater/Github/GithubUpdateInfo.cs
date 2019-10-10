@@ -1,6 +1,5 @@
 ﻿using Fluxup.Core;
 using SemVersion;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,13 +11,24 @@ namespace Fluxup.Updater.Github
     /// </summary>
     public class GithubUpdateInfo : IUpdateInfo<GithubUpdateEntry>
     {
-        internal GithubUpdateInfo(IEnumerable<GithubUpdateEntry> updates)
+        internal GithubUpdateInfo()
+        {
+        }
+    
+        internal GithubUpdateInfo(IEnumerable<GithubUpdateEntry> updates, bool useDelta)
         {
             //Filter out any updates that are null for now...
             Updates = updates?.Where(x => x != null).ToArray();
             NewestUpdateVersion = Updates?.FirstOrDefault()?.Version;
             HasUpdate = Core.HasUpdate.ApplicationHasUpdate(NewestUpdateVersion);
+            UpdateRequired = Updates?.Any(x => x.UpdateRequired) ?? false;
+            UseDelta = useDelta;
         }
+
+        /// <summary>
+        /// If we are allowing delta packages 
+        /// </summary>
+        internal bool UseDelta { get; }
 
         /// <inheritdoc cref="Fluxup.Core.IUpdateInfo{TUpdateEntry}.HasUpdate"/>
         public bool HasUpdate { get; }
@@ -29,9 +39,8 @@ namespace Fluxup.Updater.Github
         /// <inheritdoc cref="Fluxup.Core.IUpdateInfo{TUpdateEntry}.NewestUpdateVersion"/>
         public SemanticVersion NewestUpdateVersion { get; }
 
-        //TODO: Add this...
         /// <inheritdoc cref="Fluxup.Core.IUpdateInfo{TUpdateEntry}.UpdateRequired"/>
-        public bool UpdateRequired => throw new NotImplementedException();
+        public bool UpdateRequired { get; }
 
         /// <inheritdoc cref="Fluxup.Core.IUpdateInfo{TUpdateEntry}.FetchReleaseNotes()"/>
         public async Task<string[]> FetchReleaseNotes()

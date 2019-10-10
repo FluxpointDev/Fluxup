@@ -3,10 +3,13 @@ using Fluxup.Core.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using NuGet.Packaging;
 using Fluxup.Core.Networking;
+using Fluxup.Updater.Exceptions;
 
 // ReSharper disable InconsistentNaming
 namespace Fluxup.Updater.Github
@@ -20,6 +23,7 @@ namespace Fluxup.Updater.Github
         private GithubUpdateFetcher @this;
         internal const string GithubApiRoot = "https://api.github.com";
         private readonly Logger Logger = new Logger("GithubUpdateFetcher");
+        private GithubUpdateInfo LatestGithubUpdateInfo = new GithubUpdateInfo(null, true);
 
         /// <summary>
         /// Makes <see cref="GithubUpdateFetcher"/>
@@ -69,12 +73,21 @@ namespace Fluxup.Updater.Github
         /// <inheritdoc cref="Fluxup.Core.IUpdateFetcher{TUpdateInfo,TUpdateEntry}.CheckForUpdate(bool)"/>
         public async Task<GithubUpdateInfo> CheckForUpdate(bool useDeltaPatching = true)
         {
+#if !DEBUG
+            //TODO: Check if we already checking for a update....
+            if (!IsInstalledApp)
+            {
+                return Logger.ErrorAndReturnDefault<GithubUpdateInfo>("This isn't a installed application, you need to install this application.");
+            }
             IsCheckingForUpdate = true;
+#endif
             
+            //Get json from release api
             using var httpClient = HttpClientHelper.CreateHttpClient(ApplicationName);
             using var responseMessage = await httpClient.GetAsyncLogged(GithubApiRoot + $"/repos/{OwnerUsername}/{RepoName}/releases/latest");
-
             var json = await responseMessage.Content.ReadAsStringAsync();
+
+            //Check to see if we got anything we can use
             if (string.IsNullOrEmpty(json))
             {
                 IsCheckingForUpdate = false;
@@ -93,6 +106,7 @@ namespace Fluxup.Updater.Github
                     $"\r\n  Documentation Url: {error.DocumentationUrl}");
             }
 
+            //Look for a RELEASES file from the release api 
             var releases = JsonConvert.DeserializeObject<GithubRelease>(json);
             var release = releases.Assets.Where(x => x.Name == "RELEASES");
             if (!release.Any())
@@ -106,6 +120,7 @@ namespace Fluxup.Updater.Github
                 Logger.Warning("They is more then one RELEASES file, going to use the first RELEASES file");
             }
 
+            //Grab RELEASES file and check if we can use it
             using var releaseFileContent = await httpClient.GetAsyncLogged(release.First().BrowserDownloadUrl);
             var releaseFile = await releaseFileContent.Content.ReadAsStringAsync();
             if (!releaseFileContent.IsSuccessStatusCode)
@@ -122,6 +137,8 @@ namespace Fluxup.Updater.Github
                     ("RELEASES file has no content");
             }
 
+            //Make RELEASES file contents into something we can use
+            //TODO: Check that RELEASES file is valid....
             var releaseUpdates = releaseFile.Split('\r');
             var githubUpdateEntries = new Dictionary<string, GithubUpdateEntry>();
             foreach (var update in releaseUpdates)
@@ -132,21 +149,30 @@ namespace Fluxup.Updater.Github
                 }
 
                 var fileSplit = update.Split(' ');
-                githubUpdateEntries.Add(fileSplit[1], new GithubUpdateEntry(releases.Id, fileSplit[0], fileSplit[1], long.Parse(fileSplit[2]), ref @this));
+                githubUpdateEntries.Add(fileSplit[1], new GithubUpdateEntry(releases.Id, fileSplit[0], fileSplit[1], long.Parse(fileSplit[2]), fileSplit.Length >= 4 && bool.Parse(fileSplit[3]), ref @this));
             }
 
+            //Get version and if its a delta package
             foreach (var asset in releases.Assets)
             {
-                if (!asset.Name.EndsWith(".nupkg") ||
-                    asset.Name == "RELEASES" || !githubUpdateEntries.ContainsKey(asset.Name) ||
-                    githubUpdateEntries[asset.Name].AddVersionAndDeltaFromFileName(asset.Name)) continue;
-                
+                //Check that it's a file we can use
+                if(!asset.Name.EndsWith(".nupkg") ||
+                   asset.Name == "RELEASES" || !githubUpdateEntries.ContainsKey(asset.Name)) continue;
+                githubUpdateEntries[asset.Name].DownloadUri = asset.BrowserDownloadUrl;
+
+                //Add version and if its a delta package from filename if we can (and if it's a nuget file)
+                if (githubUpdateEntries[asset.Name].AddVersionAndDeltaFromFileName(asset.Name)) continue;
+
+                //Get nupkg file stream
                 var fileStream = await httpClient.GetStreamAsyncLogged(asset.BrowserDownloadUrl);
                 
+                //get .nuspec file from nupkg
                 using var packageReader = new PackageArchiveReader(fileStream);
                 var nuspecReader = await packageReader.GetNuspecReaderAsync(default);
                 githubUpdateEntries[asset.Name].Version = nuspecReader.GetMetadataValue("version").ParseVersion();
-
+                
+                //Check contents to see if it's a delta package
+                //TODO: Find a way to await foreach this, would make this a *lot* faster
                 foreach (var entry in await packageReader.GetFilesAsync(default))
                 {
                     if (string.IsNullOrEmpty(entry) || entry.EndsWith("/"))
@@ -158,21 +184,82 @@ namespace Fluxup.Updater.Github
                 }
             }
 
+            //Give it to people
             GC.Collect();
             IsCheckingForUpdate = false;
-            return new GithubUpdateInfo(githubUpdateEntries.Values);
+            return LatestGithubUpdateInfo = new GithubUpdateInfo(githubUpdateEntries.Values, useDeltaPatching);
         }
 
         /// <inheritdoc cref="Fluxup.Core.IUpdateFetcher{TUpdateInfo,TUpdateEntry}.DownloadUpdates(TUpdateEntry[], System.Action{System.Double}, System.Action{System.Exception})"/>
-        public Task DownloadUpdates(GithubUpdateEntry[] updateEntry, Action<double> progress = default, Action<Exception> downloadFailed = default)
+        public async Task DownloadUpdates(GithubUpdateEntry[] updateEntry, Action<double> progress = default, Action<Exception> downloadFailed = default)
         {
-            throw new NotImplementedException();
+#if !DEBUG
+            if (!IsInstalledApp)
+            {
+                Logger.Error("This isn't a installed application'");
+                return;
+            }
+#endif
+
+            if (!Directory.Exists("../FluxupTemp"))
+            {
+                Directory.CreateDirectory("../FluxupTemp");
+            }
+
+            using var httpClient = HttpClientHelper.CreateHttpClient(ApplicationName);
+            for (var i = 0; i < updateEntry.LongLength; i++)
+            {
+                var entry = updateEntry[i];
+                // If the file exists then look if it's the file we need, if it is then use it else 
+                // delete the file 
+                if (File.Exists($"../FluxupTemp/{entry.Filename}"))
+                {
+                    if (!entry.CheckHash(File.Open($"../FluxupTemp/{entry.Filename}", FileMode.Open)))
+                    {
+                        File.Delete($"../FluxupTemp/{entry.Filename}");
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+                
+                using var file = await httpClient.GetStreamAsyncLogged(entry.DownloadUri);
+                using var localFile = new TrackableStream($"../FluxupTemp/{entry.Filename}", FileMode.Create);
+
+                //Gets how much bytes the file is (because for some reason they don't put in this length ;-;)
+                var _contentBytesRemaining = file.GetType()
+                    .GetMember("_contentBytesRemaining", BindingFlags.Instance | BindingFlags.NonPublic);
+                var fileLength = double.Parse(((FieldInfo) _contentBytesRemaining[0]).GetValue(file).ToString());
+                
+                //Tell the user that it has progressed
+                localFile.LengthChanged += (_, amountDownloaded) =>
+                {
+                    progress?.Invoke(((i + amountDownloaded / fileLength) / updateEntry.Length) * 100);
+                };
+                await file.CopyToAsync(localFile);
+                file.Dispose();
+
+                // Check hash, if it's not the one we have throw error to the user,
+                // delete the file and break as we can't continue due to this.
+                if (entry.CheckHash(localFile)) continue;
+                downloadFailed?.Invoke(new SHA1MatchFailed(entry.Filename, entry.SHA1, entry.SHA1Computed));
+                localFile.Dispose();
+                File.Delete($"../FluxupTemp/{entry.Filename}");
+                break;
+            }
         }
 
         /// <inheritdoc cref="Fluxup.Core.IUpdateFetcher{TUpdateInfo,TUpdateEntry}.DownloadUpdates(Action{double}, Action{Exception})"/>
-        public Task DownloadUpdates(Action<double> progress = default, Action<Exception> downloadFailed = default)
+        public async Task DownloadUpdates(Action<double> progress = default, Action<Exception> downloadFailed = default)
         {
-            throw new NotImplementedException();
+            //Check for updates if last time we check resulted in no updates
+            if (!LatestGithubUpdateInfo.HasUpdate)
+            {
+                await CheckForUpdate(LatestGithubUpdateInfo.UseDelta);
+            }
+
+            await DownloadUpdates(LatestGithubUpdateInfo.Updates, progress, downloadFailed);
         }
 
         /// <inheritdoc cref="Fluxup.Core.IUpdateFetcher{TUpdateInfo,TUpdateEntry}.InstallUpdates(TUpdateEntry[], System.Action{System.Double}, System.Action{System.Exception})"/>
@@ -182,9 +269,15 @@ namespace Fluxup.Updater.Github
         }
 
         /// <inheritdoc cref="Fluxup.Core.IUpdateFetcher{TUpdateInfo,TUpdateEntry}.InstallUpdates(Action{double}, Action{Exception})"/>
-        public Task InstallUpdates(Action<double> progress = default, Action<Exception> installFailed = default)
+        public async Task InstallUpdates(Action<double> progress = default, Action<Exception> installFailed = default)
         {
-            throw new NotImplementedException();
+            //Check for updates if last time we check resulted in no updates
+            if (!LatestGithubUpdateInfo.HasUpdate)
+            {
+                await CheckForUpdate(LatestGithubUpdateInfo.UseDelta);
+            }
+            
+            await InstallUpdates(LatestGithubUpdateInfo.Updates, progress, installFailed);
         }
     }
 }

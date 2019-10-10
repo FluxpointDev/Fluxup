@@ -37,6 +37,11 @@ namespace Fluxup.Core
         SemanticVersion Version { get; }
 
         /// <summary>
+        /// If this update is needed for the application to continue
+        /// </summary>
+        bool UpdateRequired { get; }
+
+        /// <summary>
         /// Gets the release note for this update
         /// </summary>
         /// <returns>Release note</returns>

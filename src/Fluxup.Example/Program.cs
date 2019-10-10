@@ -29,22 +29,22 @@ namespace Fluxup.Example
             var info = await updateFetcher.CheckForUpdate();
             if (info.HasUpdate)
             {
-                Console.WriteLine("They is a update, will do it in the background...");
+                Console.WriteLine("An update is available, will do it in the background...");
                 _ = Task.Run(async () =>
                 {
                     await updateFetcher.DownloadUpdates(info.Updates, 
-                        d => Console.WriteLine($"Update download progress is {d}%"),
+                        d => Console.WriteLine($"Update download progress: {d}%"),
                         e =>
                         {
-                            Console.WriteLine("Update download failed :(");
+                            Console.WriteLine($"Update download failed :(\r\n{e}");
                         });
                     await updateFetcher.InstallUpdates(info.Updates, 
-                        d => Console.WriteLine($"Update install progress is {d}%"),
+                        d => Console.WriteLine($"Update install progress: {d}%"),
                         e =>
                         {
-                            Console.WriteLine("Update download failed :(");
+                            Console.WriteLine($"Update install failed :(\r\n{e}");
                         });
-                    Console.WriteLine("Update has downloaded and installed, restart app to apply update");
+                    Console.WriteLine("Update has been downloaded and installed, restart app to apply update");
                 });
             }
             

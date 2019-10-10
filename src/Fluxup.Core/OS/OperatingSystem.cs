@@ -51,7 +51,7 @@ namespace Fluxup.Core.OS
         /// </summary>
         public static bool OnLinux { get; }
         
-        //TODO: Find out how to know when on android
+        //TODO: Find out how to know when user is on android
         /// <summary>
         /// User is running Android
         /// </summary>

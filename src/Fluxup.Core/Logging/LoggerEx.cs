@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Reflection;
 
 namespace Fluxup.Core.Logging
 {
@@ -17,7 +19,8 @@ namespace Fluxup.Core.Logging
         public static T ErrorAndReturnDefault<T>(this Logger logger, string message) 
         {
             logger.Error(message);
-            return default;
+            var constructors = typeof(T).GetConstructors(BindingFlags.NonPublic);
+            return (T)Activator.CreateInstance(typeof(T),!constructors.Any(x => x.IsPublic));
         }
 
         /// <summary>
@@ -30,7 +33,8 @@ namespace Fluxup.Core.Logging
         public static T ErrorAndReturnDefault<T>(this Logger logger, Exception exception)
         {
             logger.Error(exception);
-            return default;
+            var constructors = typeof(T).GetConstructors();
+            return (T)Activator.CreateInstance(typeof(T),!constructors.Any(x => x.IsPublic));
         }
     }
 }

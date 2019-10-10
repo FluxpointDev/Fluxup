@@ -5,9 +5,8 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 	  <Authors>Fluxpoint</Authors>
     <Company>Fluxpoint</Company>
-    <PackageProjectUrl></PackageProjectUrl>
     <RepositoryUrl>https://github.com/FluxpointDev/Fluxup</RepositoryUrl>
-    <Version>0.0.0.2</Version>
+    <Version>0.0.0.3-alpha</Version>
     <Description>Welcome to the world of cross platform Updating Wew!!</Description>
     <Copyright>MIT</Copyright>
 	  <LangVersion>preview</LangVersion>
