@@ -51,10 +51,10 @@ namespace Fluxup.Updater.Github
         public bool IsCheckingForUpdate { get; private set; }
 
         /// <inheritdoc cref="Fluxup.Core.IUpdateFetcher{TUpdateInfo,TUpdateEntry}.IsDownloadingUpdates"/>
-        public bool IsDownloadingUpdates { get; }
+        public bool IsDownloadingUpdates { get; private set; }
 
         /// <inheritdoc cref="Fluxup.Core.IUpdateFetcher{TUpdateInfo,TUpdateEntry}.IsInstallingUpdates"/>
-        public bool IsInstallingUpdates { get; }
+        public bool IsInstallingUpdates { get; private set; }
 
         //TODO: Use this when getting updates
         /// <inheritdoc cref="Fluxup.Core.IUpdateFetcher{TUpdateInfo,TUpdateEntry}.UpdateChannel"/>
@@ -74,13 +74,13 @@ namespace Fluxup.Updater.Github
         public async Task<GithubUpdateInfo> CheckForUpdate(bool useDeltaPatching = true)
         {
 #if !DEBUG
-            //TODO: Check if we already checking for a update....
+            //TODO: Check if we are already checking for a update....
             if (!IsInstalledApp)
             {
                 return Logger.ErrorAndReturnDefault<GithubUpdateInfo>("This isn't a installed application, you need to install this application.");
             }
-            IsCheckingForUpdate = true;
 #endif
+            IsCheckingForUpdate = true;
             
             //Get json from release api
             using var httpClient = HttpClientHelper.CreateHttpClient(ApplicationName);
@@ -194,12 +194,14 @@ namespace Fluxup.Updater.Github
         public async Task DownloadUpdates(GithubUpdateEntry[] updateEntry, Action<double> progress = default, Action<Exception> downloadFailed = default)
         {
 #if !DEBUG
+            //TODO: Check if we are already downloading some updates....
             if (!IsInstalledApp)
             {
-                Logger.Error("This isn't a installed application'");
+                Logger.Error("This isn't a installed application, you need to install this application.");
                 return;
             }
 #endif
+            IsDownloadingUpdates = true;
 
             if (!Directory.Exists("../FluxupTemp"))
             {
@@ -246,8 +248,37 @@ namespace Fluxup.Updater.Github
                 downloadFailed?.Invoke(new SHA1MatchFailed(entry.Filename, entry.SHA1, entry.SHA1Computed));
                 localFile.Dispose();
                 File.Delete($"../FluxupTemp/{entry.Filename}");
+                IsDownloadingUpdates = false;
                 break;
             }
+        }
+
+        /// <inheritdoc cref="Fluxup.Core.IUpdateFetcher{TUpdateInfo,TUpdateEntry}.InstallUpdates(TUpdateEntry[], System.Action{System.Double}, System.Action{System.Exception})"/>
+        public async Task InstallUpdates(GithubUpdateEntry[] updateEntry, Action<double> progress = default, Action<Exception> installFailed = default)
+        {
+#if !DEBUG
+            //TODO: Check if we are already downloading some updates....
+            if (!IsInstalledApp)
+            {
+                Logger.Error("This isn't a installed application, you need to install this application.");
+                return;
+            }
+            IsInstallingUpdates = true;
+#endif
+            
+            foreach (var entry in updateEntry)
+            {
+                if (entry.IsDelta)
+                {
+                    //TODO: Do IsDelta logic....
+                }
+                else
+                {
+                    //TODO: Do !IsDelta logic...
+                }
+            }
+
+            IsInstallingUpdates = false;
         }
 
         /// <inheritdoc cref="Fluxup.Core.IUpdateFetcher{TUpdateInfo,TUpdateEntry}.DownloadUpdates(Action{double}, Action{Exception})"/>
@@ -261,13 +292,7 @@ namespace Fluxup.Updater.Github
 
             await DownloadUpdates(LatestGithubUpdateInfo.Updates, progress, downloadFailed);
         }
-
-        /// <inheritdoc cref="Fluxup.Core.IUpdateFetcher{TUpdateInfo,TUpdateEntry}.InstallUpdates(TUpdateEntry[], System.Action{System.Double}, System.Action{System.Exception})"/>
-        public Task InstallUpdates(GithubUpdateEntry[] updateEntry, Action<double> progress = default, Action<Exception> installFailed = default)
-        {
-            throw new NotImplementedException();
-        }
-
+        
         /// <inheritdoc cref="Fluxup.Core.IUpdateFetcher{TUpdateInfo,TUpdateEntry}.InstallUpdates(Action{double}, Action{Exception})"/>
         public async Task InstallUpdates(Action<double> progress = default, Action<Exception> installFailed = default)
         {

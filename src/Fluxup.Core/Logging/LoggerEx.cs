@@ -19,8 +19,7 @@ namespace Fluxup.Core.Logging
         public static T ErrorAndReturnDefault<T>(this Logger logger, string message) 
         {
             logger.Error(message);
-            var constructors = typeof(T).GetConstructors(BindingFlags.NonPublic);
-            return (T)Activator.CreateInstance(typeof(T),!constructors.Any(x => x.IsPublic));
+            return (T)Activator.CreateInstance(typeof(T),HasPrivateConstructor<T>());
         }
 
         /// <summary>
@@ -33,8 +32,10 @@ namespace Fluxup.Core.Logging
         public static T ErrorAndReturnDefault<T>(this Logger logger, Exception exception)
         {
             logger.Error(exception);
-            var constructors = typeof(T).GetConstructors();
-            return (T)Activator.CreateInstance(typeof(T),!constructors.Any(x => x.IsPublic));
+            return (T)Activator.CreateInstance(typeof(T), HasPrivateConstructor<T>());
         }
+        
+        private static ConstructorInfo[] GetConstructorInfo<T>() => typeof(T).GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance);
+        private static bool HasPrivateConstructor<T>() => GetConstructorInfo<T>().Any(x => x.IsPrivate);
     }
 }
