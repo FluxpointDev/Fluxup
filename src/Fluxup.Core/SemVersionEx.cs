@@ -15,7 +15,7 @@ namespace Fluxup.Core
         /// <returns></returns>
         public static SemanticVersion ParseVersion(this string versionString) 
         {
-            SemanticVersion.TryParse(versionString, out var version);
+            SemanticVersion.TryParse(versionString.Replace(".0.0", ""), out var version);
             return version;
         }
 
@@ -26,7 +26,8 @@ namespace Fluxup.Core
         /// <returns></returns>
         public static SemanticVersion SystemToSemantic(this Version version)
         {
-            return ParseVersion(version.ToString());
+            return new SemanticVersion(version.Major, version.Minor, version.Build,
+                build: version.Revision > 0 ? version.Revision.ToString() : default);
         }
 
         /// <summary>

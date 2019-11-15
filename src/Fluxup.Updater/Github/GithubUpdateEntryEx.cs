@@ -19,6 +19,7 @@ namespace Fluxup.Updater.Github
         {
             using var sha1 = SHA1.Create();
             var hashByte = sha1.ComputeHash(fileStream);
+            fileStream.Dispose();
             var hash = hashByte.Aggregate("", (current, b) => current + b.ToString("X"));
             updateEntry.SHA1Computed = hash;
             

@@ -5,9 +5,11 @@ namespace Fluxup.Core
 {
     internal static class HasUpdate
     {
+        private static AssemblyName assembly = Assembly.GetEntryAssembly().GetName();
+        
         public static bool ApplicationHasUpdate(SemanticVersion version)
         {
-            return version.SemanticToSystem() > Assembly.GetExecutingAssembly().GetName().Version;
+            return version.SemanticToSystem() > assembly.Version;
         }
     }
 }

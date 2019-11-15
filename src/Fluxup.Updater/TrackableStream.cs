@@ -4,9 +4,7 @@ using System.IO;
 //TODO: Comment this....
 public class TrackableStream : FileStream
 {
-    public TrackableStream(string path, FileMode fileMode) : base(path, fileMode)
-    {   
-    }
+    public TrackableStream(string path, FileMode fileMode) : base(path, fileMode) { }
 
     public override void Write(byte[] array, int offset, int count)
     {

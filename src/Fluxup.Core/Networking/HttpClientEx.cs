@@ -11,7 +11,7 @@ namespace Fluxup.Core.Networking
     /// </summary>
     public static class HttpClientEx
     {
-        private static readonly Logger Logger = new Logger("Networking");
+        private static readonly Logger Logger = new Logger(nameof(HttpClientEx));
 
         /// <summary>
         /// Gets a Stream from the internet

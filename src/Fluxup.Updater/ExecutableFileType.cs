@@ -6,7 +6,7 @@ namespace Fluxup.Updater
 {
     internal static class ExecutableFileType
     {
-        private static readonly Logger Logger = new Logger("ExecutableFileType");
+        private static readonly Logger Logger = new Logger(nameof(ExecutableFileType));
         
         /// <summary>
         /// Gets the executable file type of the application

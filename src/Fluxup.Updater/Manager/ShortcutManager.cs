@@ -20,7 +20,7 @@ namespace Fluxup.Updater.Manager
     {
         private const string WindowsFileType = ".lnk";
         private const string LinuxFileType = ".desktop";
-        private static readonly Logger Logger = new Logger("Shortcut");
+        private static readonly Logger Logger = new Logger(nameof(ShortcutManager));
 
         /// <summary>
         /// Makes a shortcut to the application.

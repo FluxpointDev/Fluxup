@@ -23,7 +23,7 @@ namespace Fluxup.Updater.Github
         }
 
         /// <summary>
-        /// Gets the hash computed from <see cref="GithubUpdateEntryEx.CheckHash(GithubUpdateEntry, Stream)"/>
+        /// Gets the hash computed from <see cref="GithubUpdateEntryEx.CheckHash(GithubUpdateEntry, System.IO.Stream)"/>
         /// </summary>
         internal string SHA1Computed { get; set; }
 

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace Fluxup.Updater.Github
@@ -57,7 +59,7 @@ namespace Fluxup.Updater.Github
         public Author Author { get; private set; }
 
         [JsonProperty("assets")]
-        public Asset[] Assets { get; private set; }
+        public IList<Asset> Assets { get; internal set; }
     }
 
     internal class Asset

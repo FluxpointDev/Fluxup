@@ -10,7 +10,7 @@ namespace Fluxup.Example
 { 
     public static class Program
     {
-        private static Logger Logger = new Logger("Example Application");
+        private static Logger Logger = new Logger(nameof(Program));
         private static GithubUpdateFetcher updateFetcher = new GithubUpdateFetcher("Fluxup", "ppy", "osu");
 
         private static async Task Main(string[] args)
@@ -34,6 +34,7 @@ namespace Fluxup.Example
                 {
                     await updateFetcher.DownloadUpdates(info.Updates, 
                         d => Console.WriteLine($"Update download progress: {d}%"),
+                        (d, file) => Console.WriteLine($"Update download progress ({file}): {d}%"),
                         e =>
                         {
                             Console.WriteLine($"Update download failed :(\r\n{e}");
