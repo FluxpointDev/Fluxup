@@ -1,4 +1,5 @@
 using System;
+using Fluxup.Core;
 
 // ReSharper disable InconsistentNaming
 namespace Fluxup.Updater.Exceptions
@@ -11,6 +12,11 @@ namespace Fluxup.Updater.Exceptions
         public SHA1MatchFailed(string fileName, string exceptedHash, string hashComputed)
         {
             Message = $"{fileName} doesn't match with the excepted SHA1 hash\r\nExcepted hash: {exceptedHash}\r\nHash computed: {hashComputed}";
+        }
+
+        public SHA1MatchFailed(IUpdateEntry entry, string hashComputed)
+        {
+            Message = $"{entry.Filename} doesn't match with the excepted SHA1 hash\r\nExcepted hash: {entry.SHA1}\r\nHash computed: {hashComputed}";
         }
         
         /// <inheritdoc cref="System.Exception.Message"/>

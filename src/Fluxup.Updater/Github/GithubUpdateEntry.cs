@@ -21,12 +21,7 @@ namespace Fluxup.Updater.Github
             SHA1 = sha1.Trim();
             UpdateRequired = updateRequired;
         }
-
-        /// <summary>
-        /// Gets the hash computed from <see cref="GithubUpdateEntryEx.CheckHash(GithubUpdateEntry, System.IO.Stream)"/>
-        /// </summary>
-        internal string SHA1Computed { get; set; }
-
+        
         /// <summary>
         /// Fetcher that made this <see cref="GithubUpdateEntry"/>
         /// </summary>

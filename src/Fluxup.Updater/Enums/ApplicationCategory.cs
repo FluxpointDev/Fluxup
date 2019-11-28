@@ -2,7 +2,7 @@
 // ReSharper disable InconsistentNaming
 // ReSharper disable CommentTypo
 // ReSharper disable IdentifierTypo
-namespace Fluxup.Updater
+namespace Fluxup.Updater.Enums
 {
     //Based on https://specifications.freedesktop.org/menu-spec/latest/apas02.html
     /// <summary>

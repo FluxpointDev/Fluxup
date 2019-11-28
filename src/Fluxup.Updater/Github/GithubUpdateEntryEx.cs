@@ -15,15 +15,9 @@ namespace Fluxup.Updater.Github
         /// <param name="updateEntry">updateEntry</param>
         /// <param name="fileStream">Stream of a file</param>
         /// <returns>If the hash is the same as the file hash</returns>
-        public static bool CheckHash(this GithubUpdateEntry updateEntry, Stream fileStream)
+        public static bool CheckHash(this GithubUpdateEntry updateEntry, Stream fileStream, out string computedHash)
         {
-            using var sha1 = SHA1.Create();
-            var hashByte = sha1.ComputeHash(fileStream);
-            fileStream.Dispose();
-            var hash = hashByte.Aggregate("", (current, b) => current + b.ToString("X"));
-            updateEntry.SHA1Computed = hash;
-            
-            return hash == updateEntry.SHA1;
+            return fileStream.CheckHash(updateEntry.SHA1, out computedHash);
         }
     }
 }

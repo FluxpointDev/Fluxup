@@ -5,6 +5,7 @@ using Fluxup.Updater.Github;
 using Fluxup.Updater.Manager;
 using Fluxup.Updater;
 using Fluxup.Core.Logging;
+using Fluxup.Updater.Enums;
 
 namespace Fluxup.Example
 { 

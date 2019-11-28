@@ -91,7 +91,7 @@ namespace Fluxup.Updater.Github
             using var httpClient = HttpClientHelper.CreateHttpClient(ApplicationName);
             using var responseMessage = await httpClient.GetAsyncLogged
                 (GithubApiRoot + $"/repos/{OwnerUsername}/{RepoName}/releases/latest");
-            var json = await responseMessage.Content.ReadAsStringAsync();
+            var json = responseMessage != null ? await responseMessage.Content.ReadAsStringAsync() : "";
 
             //Check to see if we got anything we can use
             if (string.IsNullOrEmpty(json))
@@ -101,7 +101,7 @@ namespace Fluxup.Updater.Github
                     ("\r\nWe are given no response from Github, can't continue..." +
                     responseMessage.ErrorResponseMessage());
             }
-            else if (!responseMessage.IsSuccessStatusCode)
+            else if (!(responseMessage?.IsSuccessStatusCode).GetValueOrDefault())
             {
                 var error = JsonConvert.DeserializeObject<GithubError>(json);
                 IsCheckingForUpdate = false;
@@ -114,7 +114,7 @@ namespace Fluxup.Updater.Github
 
             //Look for a RELEASES file from the release api 
             var releases = JsonConvert.DeserializeObject<GithubRelease>(json);
-            var release = releases.Assets.Where(x => x.Name.StartsWith("RELEASES"));
+            var release = releases.Assets.Where(x => x.Name.StartsWith("RELEASES")).ToArray();
             releases.Assets = releases.Assets.Except(release).ToList();
             if (!release.Any())
             {
@@ -122,7 +122,7 @@ namespace Fluxup.Updater.Github
                 return Logger.ErrorAndReturnDefault<GithubUpdateInfo>
                     ("They is no RELEASES file, assumed to have no updates");
             }
-            else if (release.Count() > 1)
+            else if (release.LongLength > 1)
             {
                 //TODO: This is where we would use UpdateChannel, make it look at the filename to know what
                 // file to use
@@ -225,12 +225,11 @@ namespace Fluxup.Updater.Github
                 // delete the file 
                 if (File.Exists($"../FluxupTemp/{entry.Filename}"))
                 {
-                    //TODO: uncomment the if after, needed as osu!lazer hash's are not what they should be. :thonk:
-                    //if (!entry.CheckHash(File.Open($"../FluxupTemp/{entry.Filename}", FileMode.Open, FileAccess.Read)))
-                    //{
-                    //    File.Delete($"../FluxupTemp/{entry.Filename}");
-                    //}
-                    //else
+                    if (!entry.CheckHash(File.Open($"../FluxupTemp/{entry.Filename}", FileMode.Open, FileAccess.Read), out _))
+                    {
+                        File.Delete($"../FluxupTemp/{entry.Filename}");
+                    }
+                    else
                     {
                         continue;
                     }
@@ -257,13 +256,13 @@ namespace Fluxup.Updater.Github
                 // Check hash, if it's not the one we have throw error to the user,
                 // delete the file and break as we can't continue due to this.
                 //TODO: uncomment the if after, needed as osu!lazer hash's are not what they should be. :thonk:
-                //if (entry.CheckHash(localFile))
+                if (!entry.CheckHash(localFile, out var SHA1Computed))
                 {
                     localFile.Dispose();
                     continue;
                 }
                 
-                downloadFailed?.Invoke(new SHA1MatchFailed(entry.Filename, entry.SHA1, entry.SHA1Computed));
+                downloadFailed?.Invoke(new SHA1MatchFailed(entry, SHA1Computed));
                 localFile.Dispose();
                 File.Delete($"../FluxupTemp/{entry.Filename}");
                 IsDownloadingUpdates = false;
@@ -286,11 +285,12 @@ namespace Fluxup.Updater.Github
 #endif
             IsInstallingUpdates = true;
 
-            //Get if the updates entries have the applications version, if so we know that we can use delta packages :D
+            //Get if the updates entries have the applications version,
+            //if so we know that we can use delta packages :D
             var hasApplicationVersion = updateEntry.SkipWhile
                 (x => x.Version != AppInfo.AppVersion.SystemToSemantic()).Any();
             
-            //Sort the entries out, making it ordered in a way for us to use
+            //Sort the entries out, making it ordered in a way that we can use
             updateEntry = updateEntry.OrderBy(x => x.IsDelta).ThenBy(x => x.Version).ToArray();
             var updateEntryTmp = updateEntry.ToList();
             for (var i = 0; i < updateEntryTmp.Count; i++)
@@ -334,7 +334,7 @@ namespace Fluxup.Updater.Github
             updateEntry = updateEntryTmp.Any() ?
                 updateEntryTmp.ToArray() : updateEntry;
             
-            //Get the first update, get where the new update will be and make dir
+            //Get the first update and get where the new update will be and make dir
             var firstUpdate = updateEntry[0];
             var newVersionLocation = Path.Combine("..", updateEntry[updateEntry.Length - 1].Version.ToString());
             Directory.CreateDirectory(newVersionLocation);
@@ -354,34 +354,39 @@ namespace Fluxup.Updater.Github
                                                        "being the first update being applied"));
                 }
 
-                using var nugetFileLocation = File.Open(Path.Combine("..", "FluxupTemp", entry.Filename), FileMode.Open); //File.Open("/home/aaron/Downloads/package.nupkg", FileMode.Open); 
+                using var nugetFileLocation = File.Open(Path.Combine("..", "FluxupTemp", entry.Filename), FileMode.Open);
+                string computedHash = null;
+                if (!entry.CheckHash(nugetFileLocation, out computedHash))
+                {
+                    installFailed?.Invoke(new SHA1MatchFailed(entry, computedHash));
+                    return;
+                }
                 using var nugetReader = new PackageArchiveReader(nugetFileLocation);
 
                 //Gets the folder that will have content we need
-                async Task<string> GetFolderWithContentNuGet()
+                var folders = new List<NuGetFramework>();
+                foreach (var file in await nugetReader.GetFilesAsync("lib", default))
                 {
-                    var folders = new List<NuGetFramework>();
-                    foreach (var file in await nugetReader.GetFilesAsync("lib",default))
+                    //TODO: Error out if we got more then two folder for use and if it doesn't have our .NET Version....
+                    if (file.EndsWith(Path.DirectorySeparatorChar.ToString()) && file.Count(x => x == Path.DirectorySeparatorChar) == 2)
                     {
-                        //TODO: Error out if we got more then two folder for use and if it doesn't have our .NET Version....
-                        if (file.EndsWith(Path.DirectorySeparatorChar.ToString()) && file != "lib/" && file.Count(x => x == Path.DirectorySeparatorChar) == 2)
-                        {
-                            folders.Add(NuGetFramework.ParseFolder(file.Replace("lib/", "").Replace("/", "")));
-                        }
+                        folders.Add(NuGetFramework.ParseFolder(file.Replace("lib/", "")
+                            .Replace("/", "")));
                     }
-
-                    return (folders.Count == 1 ? folders[0] :
-                            folders.Contains(applicationFramework) ? applicationFramework : default)?.GetShortFolderName();
                 }
 
-                string folderWithContent;
-                if (string.IsNullOrEmpty(folderWithContent = await GetFolderWithContentNuGet()))
+                string folderWithContent =
+                    (folders.Count == 1 ? folders[0] :
+                        folders.Contains(applicationFramework) ? applicationFramework : default)?.GetShortFolderName();
+
+                if (string.IsNullOrEmpty(folderWithContent))
                 {
                     installFailed?.Invoke(new FolderLocationUnavailable());
                     return;
                 }
 
                 string updatedFilesLocation;
+                string[] currentVersionFiles = null;
                 if (firstUpdate == entry)
                 {
                     if (!entry.IsDelta)
@@ -410,10 +415,11 @@ namespace Fluxup.Updater.Github
                         }
                         continue;
                     }
-                    
+
                     //If it gets here then the first update is a delta package, need the original files first to
                     //change, going to copy current files to where the updated version will be
-                    foreach (var file in Directory.GetFiles(AppInfo.AppPath, "*",SearchOption.AllDirectories))
+                    currentVersionFiles = Directory.GetFiles(AppInfo.AppPath, "*", SearchOption.AllDirectories);
+                    foreach (var file in currentVersionFiles)
                     {
                         var dirName = Path.GetDirectoryName(file);
                         var newFileLocation = Path.Combine(dirName.Replace(AppInfo.AppPath, ""), Path.GetFileName(file));
@@ -434,65 +440,116 @@ namespace Fluxup.Updater.Github
                 //Will be a delta package if it got here, work from that
                 //TODO: Delete the file off the system it is not in the folder as it means that file is no longer needed
                 //TODO: Check file after doing delta logic
-                
+
+                DeltaCompressionDotNet.IDeltaCompression MsDelta = null;
                 updatedFilesLocation = Path.Combine("lib", folderWithContent, "");
-                foreach (var file in nugetReader.GetItems(updatedFilesLocation).First(
+                //var filesToCheck = new List<string>(currentVersionFiles);
+                
+                foreach (var deltaFile in nugetReader.GetItems(updatedFilesLocation).First(
                     x => x.TargetFramework.GetShortFolderName() == folderWithContent)?.Items ?? new List<string>())
                 {
-                    if (string.IsNullOrEmpty(file))
+                    if (string.IsNullOrEmpty(deltaFile))
                     {
                         continue;
                     }
                     
                     //Where the updated file will be
-                    var newFileLocation = Path.Combine(newVersionLocation, file.Replace(updatedFilesLocation + Path.DirectorySeparatorChar, ""));
-                    if (file.EndsWith("/"))
+                    var newFileLocation = Path.Combine(newVersionLocation, deltaFile.Replace(updatedFilesLocation + Path.DirectorySeparatorChar, ""));
+                    if (deltaFile.EndsWith("/"))
                     {
                         Directory.CreateDirectory(Path.GetDirectoryName(newFileLocation));
                         continue;
                     }
-                    //Where the file will be while being edited
-                    var tmpFileLocation = Path.Combine("../FluxupTemp", file.Replace(updatedFilesLocation + Path.DirectorySeparatorChar, ""));
 
-                    //TODO: Use this to check the file that would of just been processed
-                    if (Path.GetExtension(file) == ".shasum")
+                    newFileLocation = 
+                        newFileLocation.Remove(newFileLocation.IndexOf(Path.GetExtension(newFileLocation)));
+                    //Where the file will be while being edited
+                    var tmpFileLocation = Path.Combine("../FluxupTemp", deltaFile.Replace(updatedFilesLocation + Path.DirectorySeparatorChar, ""));
+
+                    using var deltaFileStream = nugetReader.GetStream(deltaFile);
+                    if (Path.GetExtension(deltaFile) == ".shasum")
                     {
-                        continue;
+                        if (File.Open(newFileLocation, FileMode.Open)
+                            .CheckHash(await new StreamReader(deltaFileStream).ReadToEndAsync(),
+                                out computedHash))
+                        {
+                            //filesToCheck.Remove(newFileLocation);
+                            continue;
+                        }
+                        
+                        installFailed?.Invoke(new SHA1MatchFailed(entry, computedHash));
+                        return;
                     }
 
-                    using var deltaFileStream = nugetReader.GetStream(file);
                     if (deltaFileStream.CanRead && deltaFileStream.ReadByte() == -1)
                     {
-                        Logger.Information($"{file} has no content, skipping...");
+                        Logger.Information($"{deltaFile} has no content or is unreadable, skipping...");
                         continue;
                     }
-                    
-                    using var tmpLocalFileStream = File.Create(tmpFileLocation);
-                    if (Path.GetExtension(file) == ".diff")
+
+                    var tmpStream = Stream.Null;
+                    switch (Path.GetExtension(deltaFile))
                     {
                         //Error out if we aren't on windows as this format can only be used on windows
                         //(Why does it have to be the common format as well ;-;)
-                        if (!Core.OS.OperatingSystem.OnWindows)
+                        case ".diff" when !Core.OS.OperatingSystem.OnWindows:
                         {
-                            installFailed.Invoke(new Exception("Can't apply this update due to being in the diff format (Can only be used in Windows)"));
-                            return;
+                            installFailed?.Invoke
+                            (new Exception("Can't apply this update due to being in the diff format " +
+                                           "(Can only be applied in Windows due to it using a Windows only api)"));
                         }
-                        
-                        await deltaFileStream.CopyToAsync(tmpLocalFileStream);
-                        await tmpLocalFileStream.FlushAsync();
-                        tmpLocalFileStream.Dispose();
-                        tmpLocalFileStream.Close();
-                        new DeltaCompressionDotNet.MsDelta.MsDeltaCompression().ApplyDelta(tmpFileLocation, file.Remove(file.IndexOf(".diff")).Replace(updatedFilesLocation + Path.DirectorySeparatorChar, ""), newFileLocation);
-                    }
-                    else
-                    {
-                        var memStream = new MemoryStream();
-                        await deltaFileStream.CopyToAsync(memStream);
-                        memStream.Seek(0, SeekOrigin.Begin);
+                        return;
+                        case ".diff":
+                        {
+                            //Copy delta file to the tmp file
+                            tmpStream = File.OpenWrite(tmpFileLocation);
+                            await deltaFileStream.CopyToAsync(tmpStream);
+                            await tmpStream.FlushAsync();
+                            tmpStream.Dispose();
+                            tmpStream.Close();
 
-                        BinaryPatchUtility.Apply(File.Open(newFileLocation.Remove(newFileLocation.IndexOf(".diff")), FileMode.Open),() => memStream, tmpLocalFileStream);
+                            MsDelta ??= new DeltaCompressionDotNet.MsDelta.MsDeltaCompression();
+
+                            //Apply update and store in tmp folder, rename the old file, move new file and then delete the old file and the delta file
+                            MsDelta.ApplyDelta(tmpFileLocation,newFileLocation, tmpFileLocation + ".new");
+                            File.Move(newFileLocation, newFileLocation + ".old");
+                            File.Move(tmpFileLocation + ".new", newFileLocation);
+                            File.Delete(newFileLocation + ".old");
+                            File.Delete(tmpFileLocation);
+                        }
+                        break;
+                        case ".bsdiff":
+                        {
+                            tmpStream = new MemoryStream();
+                            var memStream = new MemoryStream();
+                            await deltaFileStream.CopyToAsync(memStream);
+                            memStream.Seek(0, SeekOrigin.Begin);
+                            deltaFileStream.Dispose();
+                            
+                            //Apply update, rename old file, write new file and delete old file
+                            BsdiffPatchUtility.Apply(File.Open(newFileLocation, FileMode.Open),() => memStream, tmpStream);
+                            File.Move(newFileLocation, newFileLocation + ".old");
+                            using var newFileStream = File.Create(newFileLocation);
+                            await tmpStream.CopyToAsync(newFileStream);
+                            await newFileStream.FlushAsync();
+                            File.Delete(newFileLocation + ".old");
+                        }
+                        break;
+                        default:
+                        {
+                            //rename current file to .old
+                            File.Move(newFileLocation, newFileLocation + ".old");
+
+                            //Put the new contents in place
+                            var newFileStream = File.Create(newFileLocation);
+                            await deltaFileStream.CopyToAsync(newFileStream);
+                            await newFileStream.FlushAsync();
+                            
+                            //Delete the old file
+                            File.Delete(newFileLocation + ".old");
+                            break;
+                        }
                     }
-                    //TODO: Finish this lol
                 }
             }
 

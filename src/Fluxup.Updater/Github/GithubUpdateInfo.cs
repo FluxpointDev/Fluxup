@@ -11,9 +11,7 @@ namespace Fluxup.Updater.Github
     /// </summary>
     public class GithubUpdateInfo : IUpdateInfo<GithubUpdateEntry>
     {
-        internal GithubUpdateInfo()
-        {
-        }
+        internal GithubUpdateInfo() { }
     
         internal GithubUpdateInfo(IEnumerable<GithubUpdateEntry> updates, bool useDelta)
         {
@@ -43,7 +41,7 @@ namespace Fluxup.Updater.Github
         public bool UpdateRequired { get; }
 
         /// <inheritdoc cref="Fluxup.Core.IUpdateInfo{TUpdateEntry}.FetchReleaseNotes()"/>
-        public async Task<string[]> FetchReleaseNotes()
+        public virtual async Task<string[]> FetchReleaseNotes()
         {
             var count = Updates.LongCount();
             var releaseNotes = new string[count];

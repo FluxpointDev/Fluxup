@@ -1,4 +1,4 @@
-﻿namespace Fluxup.Updater
+﻿namespace Fluxup.Updater.Enums
 {
     /// <summary>
     /// Where shortcuts can be made on the system

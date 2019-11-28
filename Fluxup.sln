@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fluxup.Example", "src\Fluxu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fluxup.Core", "src\Fluxup.Core\Fluxup.Core.csproj", "{575BC2AE-19A0-43D4-91F4-1A428B9B2579}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeltaCompressionDotNet", "src\DeltaCompressionDotNet\DeltaCompressionDotNet\DeltaCompressionDotNet.csproj", "{A0B0C830-05C6-4608-9EEE-18F0C26D9DC7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{575BC2AE-19A0-43D4-91F4-1A428B9B2579}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{575BC2AE-19A0-43D4-91F4-1A428B9B2579}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{575BC2AE-19A0-43D4-91F4-1A428B9B2579}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A0B0C830-05C6-4608-9EEE-18F0C26D9DC7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0B0C830-05C6-4608-9EEE-18F0C26D9DC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0B0C830-05C6-4608-9EEE-18F0C26D9DC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0B0C830-05C6-4608-9EEE-18F0C26D9DC7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

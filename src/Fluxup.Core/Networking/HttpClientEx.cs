@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net.Http;
+using System.Net.NetworkInformation;
 using Fluxup.Core.Logging;
 using System.Threading.Tasks;
 
@@ -21,18 +22,32 @@ namespace Fluxup.Core.Networking
         /// <returns>Stream from the internet</returns>
         public static async Task<Stream> GetStreamAsyncLogged(this HttpClient httpClient, string requestUri)
         {
-            Logger.Information($"Uri to grab stream from: {requestUri}");
-            var stream = await httpClient.GetStreamAsync(requestUri);
-            if (stream == null)
+            Logger.Debug($"Uri to grab stream from: {requestUri}");
+            if (!NetworkInterface.GetIsNetworkAvailable())
             {
-                Logger.Warning("Stream is null");
-                return null;
+                Logger.Error("Internet is currently unavailable, can't continue");
+                return Stream.Null;
             }
-            if (!stream.CanRead)
+
+            try
             {
-                Logger.Warning("You can't read the stream, this is likely not going to be usable stream");
+                var stream = await httpClient.GetStreamAsync(requestUri);
+                if (stream == null)
+                {
+                    Logger.Error("Stream is null");
+                    return Stream.Null;
+                }
+                if (!stream.CanRead)
+                {
+                    Logger.Warning("You can't read the stream, this is likely not going to be a usable stream");
+                }
+                return stream;
             }
-            return stream;
+            catch (Exception e)
+            {
+                Logger.Error(e);
+            }
+            return Stream.Null;
         }
 
         /// <summary>
@@ -54,13 +69,27 @@ namespace Fluxup.Core.Networking
         /// <returns>HttpResponseMessage from the internet</returns>
         public static async Task<HttpResponseMessage> GetAsyncLogged(this HttpClient httpClient, string requestUri)
         {
-            Logger.Information($"Uri to grab content from: {requestUri}");
-            var re = await httpClient.GetAsync(requestUri);
-            if (!re.IsSuccessStatusCode) 
+            Logger.Debug($"Uri to grab content from: {requestUri}");
+            if (!NetworkInterface.GetIsNetworkAvailable())
             {
-                Logger.Warning($"{requestUri} gave unsuccessful status code");
+                Logger.Error("Internet is currently unavailable, can't continue");
+                return default;
             }
-            return re;
+
+            try
+            {
+                var re = await httpClient.GetAsync(requestUri);
+                if (!re.IsSuccessStatusCode) 
+                {
+                    Logger.Warning($"{requestUri} gave unsuccessful status code");
+                }
+                return re;
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e);
+            }
+            return default;
         }
 
         /// <summary>

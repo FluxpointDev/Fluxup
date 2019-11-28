@@ -36,7 +36,7 @@ namespace Fluxup.Updater
     IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
     */
-    internal class BinaryPatchUtility
+    internal class BsdiffPatchUtility
     {
         /// <summary>
         /// Applies a binary patch (in <a href="http://www.daemonology.net/bsdiff/">bsdiff</a> format) to the data in

@@ -6,6 +6,7 @@ using System.Reflection;
 using Fluxup.Core.Exceptions;
 using Fluxup.Core.Logging;
 using Fluxup.Core.OS;
+using Fluxup.Updater.Enums;
 using OperatingSystem = Fluxup.Core.OS.OperatingSystem;
 
 // ReSharper disable InconsistentNaming

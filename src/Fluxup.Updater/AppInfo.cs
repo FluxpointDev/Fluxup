@@ -10,10 +10,10 @@ namespace Fluxup.Updater
 {
     internal static class AppInfo
     {
-        private static readonly Logger Logger = new Logger(nameof(AppInfo));
-        internal static readonly Assembly AppAssembly = Assembly.GetExecutingAssembly();
-        internal static readonly Version AppVersion = AppAssembly.GetName().Version;
-        internal static readonly string AppPath = Path.GetDirectoryName(AppAssembly.Location);
+        private static Logger Logger => new Logger(nameof(AppInfo));
+        internal static Assembly AppAssembly => Assembly.GetEntryAssembly();
+        internal static Version AppVersion => AppAssembly.GetName().Version;
+        internal static string AppPath => Path.GetDirectoryName(AppAssembly.Location);
         
         /// <summary>
         /// Gets if the application is installed

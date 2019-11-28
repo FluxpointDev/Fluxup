@@ -1,0 +1,3 @@
+[submodule "DeltaCompressionDotNet"]
+	path = src/DeltaCompressionDotNet
+	url = https://github.com/FluxpointDev/DeltaCompressionDotNet

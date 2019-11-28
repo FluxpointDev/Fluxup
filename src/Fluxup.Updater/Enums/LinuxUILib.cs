@@ -1,7 +1,7 @@
 // ReSharper disable InconsistentNaming
 // ReSharper disable IdentifierTypo
 // ReSharper disable CommentTypo
-namespace Fluxup.Updater
+namespace Fluxup.Updater.Enums
 {
     /// <summary>
     /// UI libraries made for linux
